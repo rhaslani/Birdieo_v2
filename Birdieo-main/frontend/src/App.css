@@ -1,0 +1,613 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: 'Montserrat', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #f8fffe;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+/* Golf-themed color palette */
+:root {
+  --golf-green-primary: #1e5631;
+  --golf-green-secondary: #2d7a3e;
+  --golf-green-light: #4caf50;
+  --golf-green-accent: #66bb6a;
+  --golf-sand: #deb887;
+  --golf-sky: #87ceeb;
+  --golf-white: #ffffff;
+  --golf-dark: #1a1a1a;
+  --golf-gray: #6b7280;
+  --golf-light-gray: #f3f4f6;
+}
+
+/* Custom golf-themed gradients */
+.golf-gradient-primary {
+  background: linear-gradient(135deg, var(--golf-green-primary) 0%, var(--golf-green-secondary) 100%);
+}
+
+.golf-gradient-light {
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%);
+}
+
+.golf-gradient-accent {
+  background: linear-gradient(135deg, var(--golf-green-light) 0%, var(--golf-green-accent) 100%);
+}
+
+/* Hero section background */
+.hero-background {
+  background-image: url('https://images.unsplash.com/photo-1538648759472-7251f7cb2c2f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxnb2xmJTIwY291cnNlfGVufDB8fHx8MTc1NjY1MTgyMnww&ixlib=rb-4.1.0&q=85');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.hero-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(30, 86, 49, 0.8);
+  backdrop-filter: blur(1px);
+}
+
+/* Glass morphism effects */
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.glass-dark {
+  background: rgba(30, 86, 49, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Premium button styles */
+.btn-golf-primary {
+  background: linear-gradient(135deg, var(--golf-green-primary) 0%, var(--golf-green-secondary) 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(30, 86, 49, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-golf-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(30, 86, 49, 0.4);
+}
+
+.btn-golf-primary:active {
+  transform: translateY(0);
+}
+
+.btn-golf-secondary {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--golf-green-primary);
+  border: 2px solid var(--golf-green-primary);
+  border-radius: 12px;
+  padding: 14px 30px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.btn-golf-secondary:hover {
+  background: var(--golf-green-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(30, 86, 49, 0.3);
+}
+
+/* Golf hole indicators */
+.hole-indicator {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--golf-green-light) 0%, var(--golf-green-accent) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.hole-indicator:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.hole-indicator.has-clip {
+  background: linear-gradient(135deg, var(--golf-green-primary) 0%, var(--golf-green-secondary) 100%);
+  box-shadow: 0 4px 20px rgba(30, 86, 49, 0.3);
+}
+
+.hole-indicator.has-clip::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  color: var(--golf-green-primary);
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+/* Video player styling */
+.golf-video-container {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  background: #000;
+  position: relative;
+}
+
+.golf-video-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 0%, rgba(30, 86, 49, 0.1) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Large Play Button Styling */
+.play-button-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.play-button-large {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  padding: 24px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.play-button-large:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.1);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+}
+
+.play-button-large:active {
+  transform: scale(1.05);
+}
+
+/* Play button icon fill */
+.play-icon-filled {
+  fill: currentColor;
+  drop-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Form styling */
+.golf-input {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(30, 86, 49, 0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 16px;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.golf-input:focus {
+  outline: none;
+  border-color: var(--golf-green-primary);
+  box-shadow: 0 0 0 3px rgba(30, 86, 49, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* Logo styling */
+.birdieo-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Status badges */
+.status-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-scheduled {
+  background: rgba(255, 193, 7, 0.2);
+  color: #f57c00;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-active {
+  background: rgba(76, 175, 80, 0.2);
+  color: var(--golf-green-primary);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.status-completed {
+  background: rgba(96, 125, 139, 0.2);
+  color: #546e7a;
+  border: 1px solid rgba(96, 125, 139, 0.3);
+}
+
+/* Animation utilities */
+.fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .btn-golf-primary,
+  .btn-golf-secondary {
+    padding: 14px 24px;
+    font-size: 14px;
+  }
+  
+  .hole-indicator {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+  
+  .golf-input {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--golf-green-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--golf-green-secondary);
+}
+
+/* Loading animation */
+.loading-golf {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(30, 86, 49, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--golf-green-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Camera capture styling */
+.camera-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.camera-container {
+  max-width: 600px;
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.camera-preview {
+  position: relative;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 16px;
+}
+
+.camera-video {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.camera-controls {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.camera-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.camera-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.camera-capture-btn {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.camera-capture-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.1);
+}
+
+/* Photo type indicators */
+.photo-type-indicator {
+  background: linear-gradient(135deg, var(--golf-green-primary) 0%, var(--golf-green-secondary) 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: inline-block;
+}
+
+/* Enhanced photo placeholders */
+.photo-placeholder {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-placeholder:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(30, 86, 49, 0.2);
+}
+
+.photo-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 0%, rgba(30, 86, 49, 0.05) 100%);
+  pointer-events: none;
+}
+
+/* Camera permission message */
+.camera-permission {
+  text-align: center;
+  padding: 40px 20px;
+  color: white;
+}
+
+.camera-permission h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.camera-permission p {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 20px;
+}
+
+/* Photo verification enhancements */
+.ai-analysis-card {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.ai-analysis-title {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 16px;
+}
+
+.ai-analysis-title::before {
+  content: '🤖';
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.clothing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.clothing-item {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e40af;
+}
+
+.confidence-score {
+  font-size: 12px;
+  color: #3b82f6;
+  opacity: 0.8;
+  margin-bottom: 20px;
+}
+
+/* Mobile responsiveness for camera */
+@media (max-width: 768px) {
+  .camera-overlay {
+    padding: 10px;
+  }
+  
+  .camera-video {
+    height: 250px;
+  }
+  
+  .camera-container {
+    max-width: 100%;
+  }
+  
+  .camera-controls {
+    gap: 12px;
+  }
+  
+  .camera-button {
+    padding: 10px;
+  }
+  
+  .camera-capture-btn {
+    padding: 12px;
+  }
+}
+
+/* Course card styling */
+.course-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.course-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* Clip grid styling */
+.clips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+/* Premium spacing */
+.section-padding {
+  padding: 80px 0;
+}
+
+.container-padding {
+  padding: 0 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
