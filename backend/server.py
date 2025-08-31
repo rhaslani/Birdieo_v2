@@ -784,6 +784,35 @@ async def analyze_current_frame():
             processed_frame_url=f"/api/stream/frame-with-detection"
         )
 
+@api_router.get("/stream/persons")
+async def get_tracked_persons():
+    """Get information about currently tracked persons"""
+    global _person_tracker
+    
+    current_time = datetime.now(timezone.utc)
+    active_persons = []
+    
+    with _person_id_lock:
+        for person_id, person_info in _person_tracker.items():
+            # Only return persons seen in last 30 seconds
+            time_diff = (current_time - person_info["last_seen"]).total_seconds()
+            if time_diff < 30:
+                active_persons.append({
+                    "person_id": person_id,
+                    "confidence": person_info["confidence"],
+                    "box": person_info["box"],
+                    "center_point": person_info["center_point"],
+                    "first_seen": person_info["first_seen"].isoformat(),
+                    "last_seen": person_info["last_seen"].isoformat(),
+                    "duration_seconds": (person_info["last_seen"] - person_info["first_seen"]).total_seconds()
+                })
+    
+    return {
+        "active_persons": active_persons,
+        "total_tracked": len(active_persons),
+        "timestamp": current_time.isoformat()
+    }
+
 @api_router.post("/stream/capture-clip")
 async def capture_30_second_clip(hole_number: int = 1):
     """Capture a 30-second clip for testing purposes"""
