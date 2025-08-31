@@ -352,46 +352,93 @@ def generate_expected_timeline(tee_time: datetime) -> Dict[str, str]:
         current_time += timedelta(minutes=15)
     return timeline
 
-async def analyze_clothing_with_ai(image_path: str, angle: str) -> Dict[str, str]:
-    """Analyze clothing using OpenAI vision model"""
+async def analyze_clothing_with_ai(image_path: str, angle: str) -> ClothingAnalysis:
+    """Analyze clothing using OpenAI vision model with detailed structure"""
     try:
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"clothing-analysis-{uuid.uuid4()}",
-            system_message="You are an expert at analyzing clothing in golf course photos. Provide detailed clothing descriptions for player identification."
+            system_message="""You are an expert at analyzing clothing in golf course photos for player identification. 
+            Provide detailed, specific descriptions that would help identify a person on a golf course. 
+            Focus on colors, patterns, styles, and distinctive features."""
         ).with_model("openai", "gpt-4o")
         
         image_content = ImageContent(file_path=image_path)
         
         user_message = UserMessage(
-            text=f"Analyze the clothing in this {angle} view photo of a golfer. Describe: 1) Top (shirt/jacket color, style, patterns), 2) Bottom (pants/shorts color, style), 3) Hat (color, style if visible), 4) Shoes (color, style if visible). Return as JSON format with keys: top, bottom, hat, shoes.",
+            text=f"""Analyze the clothing in this {angle} view photo of a golfer. For each item, provide:
+            1. Hat: Color, style, brand if visible, any logos or patterns
+            2. Top: Color, style (polo, t-shirt, jacket), patterns, sleeves
+            3. Bottom: Color, style (pants, shorts, skort), length, fit
+            4. Shoes: Color, style (golf shoes, sneakers), brand if visible
+            
+            Return as JSON format:
+            {{
+                "hat": {{"description": "...", "confidence": 0.9}},
+                "top": {{"description": "...", "confidence": 0.9}},
+                "bottom": {{"description": "...", "confidence": 0.9}},
+                "shoes": {{"description": "...", "confidence": 0.9}}
+            }}
+            
+            If an item is not visible, use confidence 0.0 and description "Not visible".""",
             file_contents=[image_content]
         )
         
         response = await chat.send_message(user_message)
         
-        # Try to parse JSON response, fallback to text parsing
         try:
             clothing_data = json.loads(response)
-        except:
-            # Fallback parsing
-            clothing_data = {
-                "top": "Not analyzed",
-                "bottom": "Not analyzed", 
-                "hat": "Not analyzed",
-                "shoes": "Not analyzed"
-            }
+            
+            # Create ClothingAnalysis object
+            clothing_items = {}
+            total_confidence = 0
+            items_count = 0
+            
+            for item_type in ["hat", "top", "bottom", "shoes"]:
+                item_data = clothing_data.get(item_type, {})
+                description = item_data.get("description", "Not analyzed")
+                confidence = float(item_data.get("confidence", 0.5))
+                
+                clothing_items[item_type] = ClothingItem(
+                    item_type=item_type,
+                    description=description,
+                    confidence=confidence
+                )
+                
+                if confidence > 0:
+                    total_confidence += confidence
+                    items_count += 1
+            
+            overall_confidence = total_confidence / max(items_count, 1)
+            
+            return ClothingAnalysis(
+                hat=clothing_items["hat"],
+                top=clothing_items["top"],
+                bottom=clothing_items["bottom"],
+                shoes=clothing_items["shoes"],
+                overall_confidence=overall_confidence
+            )
         
-        return clothing_data
+        except Exception as parse_error:
+            print(f"AI clothing analysis parsing error: {parse_error}")
+            # Return default analysis
+            return ClothingAnalysis(
+                hat=ClothingItem(item_type="hat", description="Analysis failed", confidence=0.0),
+                top=ClothingItem(item_type="top", description="Analysis failed", confidence=0.0),
+                bottom=ClothingItem(item_type="bottom", description="Analysis failed", confidence=0.0),
+                shoes=ClothingItem(item_type="shoes", description="Analysis failed", confidence=0.0),
+                overall_confidence=0.0
+            )
         
     except Exception as e:
         print(f"AI clothing analysis error: {e}")
-        return {
-            "top": "Analysis failed",
-            "bottom": "Analysis failed",
-            "hat": "Analysis failed", 
-            "shoes": "Analysis failed"
-        }
+        return ClothingAnalysis(
+            hat=ClothingItem(item_type="hat", description="Analysis failed", confidence=0.0),
+            top=ClothingItem(item_type="top", description="Analysis failed", confidence=0.0),
+            bottom=ClothingItem(item_type="bottom", description="Analysis failed", confidence=0.0),
+            shoes=ClothingItem(item_type="shoes", description="Analysis failed", confidence=0.0),
+            overall_confidence=0.0
+        )
 
 async def detect_persons_in_frame(frame: np.ndarray) -> List[PersonDetection]:
     """Detect persons in frame using AI vision model and assign unique IDs"""
