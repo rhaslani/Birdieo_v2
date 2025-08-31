@@ -166,9 +166,9 @@ class ClothingConfirmation(BaseModel):
     shoes: str
 
 class PlayerPhoto(BaseModel):
-    angle: str  # "front", "side", "back", "face"
+    angle: str  # "face", "front", "side", "back"
     file_path: str
-    clothing_analysis: Optional[Dict[str, Any]] = None
+    clothing_analysis: Optional[ClothingAnalysis] = None
 
 class Round(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
