@@ -140,10 +140,30 @@ class User(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     is_verified: bool = False
 
+class ClothingItem(BaseModel):
+    item_type: str  # "hat", "top", "bottom", "shoes"
+    description: str
+    confidence: float
+    user_confirmed: bool = False
+    user_correction: Optional[str] = None
+
+class ClothingAnalysis(BaseModel):
+    hat: ClothingItem
+    top: ClothingItem
+    bottom: ClothingItem
+    shoes: ClothingItem
+    overall_confidence: float
+
 class CheckInData(BaseModel):
+    course_name: str
     tee_time: datetime
     handedness: str  # "left" or "right"
-    course_name: str = "Lexington Golf Course"
+
+class ClothingConfirmation(BaseModel):
+    hat: str
+    top: str
+    bottom: str
+    shoes: str
 
 class PlayerPhoto(BaseModel):
     angle: str  # "front", "side", "back", "face"
