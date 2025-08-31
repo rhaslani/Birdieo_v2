@@ -1619,53 +1619,79 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Live Stream Status */}
         <div className="mb-8">
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="glass-card border-0 shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg font-semibold text-birdieo-navy">Live Stream Status</CardTitle>
+                  <CardTitle className="text-xl font-bold text-birdieo-navy flex items-center">
+                    <Video className="mr-3 h-6 w-6" />
+                    Live Stream Status
+                  </CardTitle>
                   <CardDescription>Real-time monitoring with enhanced AI person detection</CardDescription>
                 </div>
-                <Badge 
-                  variant={streamHealth?.ok ? "default" : "destructive"} 
-                  className={streamHealth?.ok ? "bg-green-100 text-green-800 border-green-200" : ""}
-                >
-                  {streamHealth?.ok ? 'Online' : 'Offline'}
-                </Badge>
+                <div className="flex items-center space-x-2">
+                  <Badge 
+                    variant={streamHealth?.ok ? "default" : "destructive"} 
+                    className={streamHealth?.ok 
+                      ? "bg-green-100 text-green-800 border-green-200 animate-pulse" 
+                      : "bg-red-100 text-red-800 border-red-200"
+                    }
+                  >
+                    <div className={`w-2 h-2 rounded-full mr-2 ${
+                      streamHealth?.ok ? 'bg-green-500' : 'bg-red-500'
+                    }`}></div>
+                    {streamHealth?.ok ? 'LIVE' : 'Offline'}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500 mb-1">Stream Health</span>
-                  <span className="font-semibold text-lg text-birdieo-navy">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                  <div className="flex items-center mb-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                    <span className="text-sm font-medium text-green-800">Stream Health</span>
+                  </div>
+                  <span className="text-lg font-bold text-green-900">
                     {streamHealth?.ok ? '✓ Enhanced AI Active' : '✗ Inactive'}
                   </span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500 mb-1">Last Update</span>
-                  <span className="font-semibold text-lg text-birdieo-navy">
+                
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center mb-2">
+                    <Clock className="w-3 h-3 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-blue-800">Last Update</span>
+                  </div>
+                  <span className="text-lg font-bold text-blue-900">
                     {streamHealth?.age_seconds ? `${streamHealth.age_seconds.toFixed(1)}s ago` : 'N/A'}
                   </span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button 
-                    onClick={captureTestClip}
-                    className="bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Capture Test Clip
-                  </Button>
+                
+                <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">
+                  <div className="flex items-center mb-2">
+                    <Users className="w-3 h-3 text-purple-600 mr-2" />
+                    <span className="text-sm font-medium text-purple-800">Detection Mode</span>
+                  </div>
+                  <span className="text-lg font-bold text-purple-900">Enhanced AI</span>
                 </div>
-                <div className="flex items-center">
-                  <Button 
-                    variant="outline" 
-                    onClick={checkStreamHealth}
-                    className="border-gray-300 hover:bg-gray-50"
-                  >
-                    Refresh Status
-                  </Button>
-                </div>
+              </div>
+              
+              <div className="mt-6 flex items-center justify-center space-x-4">
+                <Button 
+                  onClick={captureTestClip}
+                  className="btn-golf-primary"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  Capture Test Clip
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={checkStreamHealth}
+                  className="btn-golf-secondary"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Refresh Status
+                </Button>
               </div>
             </CardContent>
           </Card>
