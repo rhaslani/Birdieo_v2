@@ -736,11 +736,11 @@ async def start_checkin(
 async def get_available_courses():
     """Get list of available golf courses"""
     courses = [
-        {"id": "lexington", "name": "Lexington Golf Course", "location": "Lexington, NC"},
+        {"id": "lexington", "name": "Lexington Golf Club", "location": "Lexington, NC"},
         {"id": "pinehurst", "name": "Pinehurst Resort", "location": "Pinehurst, NC"},
-        {"id": "augusta", "name": "Augusta National", "location": "Augusta, GA"},
-        {"id": "pebble", "name": "Pebble Beach", "location": "Pebble Beach, CA"},
-        {"id": "st_andrews", "name": "St. Andrews Links", "location": "St. Andrews, Scotland"}
+        {"id": "augusta", "name": "Augusta National Golf Club", "location": "Augusta, GA"},
+        {"id": "pebble", "name": "Pebble Beach Golf Links", "location": "Pebble Beach, CA"},
+        {"id": "st_andrews", "name": "St. Andrews Old Course", "location": "St. Andrews, Scotland"}
     ]
     return {"courses": courses}
 
