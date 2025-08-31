@@ -173,6 +173,14 @@ class VideoClip(BaseModel):
     confidence_score: Optional[float] = None
     frame_accuracy_score: Optional[float] = None
 
+class PersonDetection(BaseModel):
+    person_id: str
+    confidence: float
+    box: Dict[str, int]  # x, y, w, h
+    center_point: Dict[str, int]  # x, y
+    first_seen: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_seen: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class DetectionResult(BaseModel):
     label: str
     confidence: float
