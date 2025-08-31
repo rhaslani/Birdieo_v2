@@ -23,6 +23,8 @@ import numpy as np
 import cv2
 from starlette.responses import StreamingResponse, Response
 import base64
+import hashlib
+from datetime import datetime
 
 # Import for AI integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
