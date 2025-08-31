@@ -150,7 +150,7 @@ class Round(BaseModel):
     tee_time: datetime
     handedness: str
     course_name: str
-    expected_timeline: Dict[int, str]  # hole number -> expected time
+    expected_timeline: Dict[str, str]  # hole number -> expected time
     player_photos: List[PlayerPhoto] = []
     clothing_breakdown: Optional[Dict[str, str]] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
