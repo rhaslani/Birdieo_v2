@@ -484,6 +484,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </BrowserRouter>
+        <Toaster />
       </div>
     </AuthProvider>
   );
