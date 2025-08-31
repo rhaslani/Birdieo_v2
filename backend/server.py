@@ -205,12 +205,12 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
-def generate_expected_timeline(tee_time: datetime) -> Dict[int, str]:
+def generate_expected_timeline(tee_time: datetime) -> Dict[str, str]:
     """Generate expected timeline for 18 holes (15 minutes apart)"""
     timeline = {}
     current_time = tee_time
     for hole in range(1, 19):
-        timeline[hole] = current_time.strftime("%H:%M")
+        timeline[str(hole)] = current_time.strftime("%H:%M")
         current_time += timedelta(minutes=15)
     return timeline
 
