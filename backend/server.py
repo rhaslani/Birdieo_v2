@@ -25,6 +25,9 @@ from starlette.responses import StreamingResponse, Response
 import base64
 import hashlib
 from datetime import datetime
+import subprocess
+import asyncio
+import os
 
 # Import for AI integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
