@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar";
 import { Progress } from "./components/ui/progress";
 import { Calendar } from "lucide-react";
 import { toast } from "sonner";
+import { Toaster } from "./components/ui/sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
