@@ -1726,35 +1726,65 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="glass-card border-0 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-birdieo-navy">Quick Actions</CardTitle>
-              <CardDescription>
-                Start a new round with enhanced photo capture and AI analysis
-              </CardDescription>
+              <CardTitle className="text-xl font-bold text-birdieo-navy flex items-center">
+                <Trophy className="mr-3 h-6 w-6" />
+                Quick Actions
+              </CardTitle>
+              <CardDescription>Start your round or capture test footage</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Button 
-                  className="h-24 bg-birdieo-navy hover:bg-birdieo-navy/90 text-white flex flex-col justify-center"
-                  onClick={() => setShowRoundStart(true)}
-                >
-                  <Camera className="w-8 h-8 mb-2" />
-                  <span className="font-medium">Start New Round</span>
-                  <span className="text-xs opacity-80">Enhanced Camera + AI</span>
-                </Button>
-                <Button variant="outline" className="h-24 border-2 border-gray-200 hover:bg-gray-50 flex flex-col justify-center">
-                  <BarChart3 className="w-8 h-8 mb-2 text-birdieo-navy" />
-                  <span className="font-medium text-birdieo-navy">View Analytics</span>
-                </Button>
-                <Button variant="outline" className="h-24 border-2 border-gray-200 hover:bg-gray-50 flex flex-col justify-center">
-                  <Users className="w-8 h-8 mb-2 text-birdieo-navy" />
-                  <span className="font-medium text-birdieo-navy">Manage Players</span>
-                </Button>
-                <Button variant="outline" className="h-24 border-2 border-gray-200 hover:bg-gray-50 flex flex-col justify-center">
-                  <Settings className="w-8 h-8 mb-2 text-birdieo-navy" />
-                  <span className="font-medium text-birdieo-navy">Course Settings</span>
-                </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-6 bg-gradient-to-br from-birdieo-navy to-birdieo-blue rounded-xl text-white relative overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300"
+                     onClick={() => setShowRoundStart(true)}>
+                  <div className="relative z-10">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mr-4">
+                        <Plus className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold">Start New Round</h3>
+                        <p className="text-white/80 text-sm">Set up player tracking and begin recording</p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-white/70 mb-3">
+                      • AI-powered player identification
+                    </div>
+                    <div className="text-sm text-white/70 mb-3">
+                      • Automatic shot detection
+                    </div>
+                    <div className="text-sm text-white/70">
+                      • Real-time clip generation
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                
+                <div className="p-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl text-white relative overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300"
+                     onClick={captureTestClip}>
+                  <div className="relative z-10">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mr-4">
+                        <Camera className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold">Capture Test Clip</h3>
+                        <p className="text-white/80 text-sm">Test the live stream recording functionality</p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-white/70 mb-3">
+                      • 30-second test recording
+                    </div>
+                    <div className="text-sm text-white/70 mb-3">
+                      • Stream quality verification
+                    </div>
+                    <div className="text-sm text-white/70">
+                      • AI detection preview
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
               </div>
             </CardContent>
           </Card>
