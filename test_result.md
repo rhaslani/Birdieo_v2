@@ -101,3 +101,86 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Fix the golf course dropdown to list 'Lexington Golf Club' first, followed by 5 random courses. Update silhouettes for photo capture to use the specific Face.png, Back.png, Side.jpeg, and front.png images. Fix the photo reset issue where the previously taken photo remains when switching between photo types. Implement the advanced UI/UX for round, hole, and clip management based on the extracted GitHub code."
+
+backend:
+  - task: "Golf Course Dropdown Fix"
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to update courses endpoint to put Lexington Golf Club first, followed by 5 random courses"
+
+  - task: "Backend API endpoints working"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Basic API endpoints are functional"
+
+frontend:
+  - task: "Silhouette Images Update"
+    implemented: false
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to update silhouette URLs to use newly provided images"
+
+  - task: "Photo Reset Issue Fix"
+    implemented: false
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Photo reset between different photo types not working properly"
+
+  - task: "UI/UX Improvements from GitHub reference"
+    implemented: false
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to examine and integrate GitHub zip reference for round/hole/clip management"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Golf Course Dropdown Fix"
+    - "Silhouette Images Update"  
+    - "Photo Reset Issue Fix"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Starting implementation of golf course dropdown fix, silhouette image updates, photo reset fix, and UI/UX improvements. User provided silhouette images as assets and will test manually."
