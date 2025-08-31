@@ -371,8 +371,8 @@ async def analyze_clothing_with_ai(image_path: str, angle: str) -> Dict[str, str
             "shoes": "Analysis failed"
         }
 
-async def detect_persons_in_frame(frame: np.ndarray) -> List[DetectionResult]:
-    """Detect persons in frame using AI vision model"""
+async def detect_persons_in_frame(frame: np.ndarray) -> List[PersonDetection]:
+    """Detect persons in frame using AI vision model and assign unique IDs"""
     try:
         # Encode frame as JPEG
         _, buffer = cv2.imencode('.jpg', frame)
@@ -381,13 +381,19 @@ async def detect_persons_in_frame(frame: np.ndarray) -> List[DetectionResult]:
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"person-detection-{uuid.uuid4()}",
-            system_message="You are an expert at detecting people in golf course video frames. Identify all people and provide bounding box coordinates."
+            system_message="""You are an expert at detecting people in golf course video frames. 
+            For each person detected, provide bounding box coordinates as pixel values (not percentages).
+            Return accurate bounding boxes that tightly fit around each person."""
         ).with_model("openai", "gpt-4o")
         
         image_content = ImageContent(image_base64=image_b64)
+        h, w = frame.shape[:2]
         
         user_message = UserMessage(
-            text="Detect all people in this golf course image. For each person, provide bounding box coordinates (x, y, width, height) as percentage of image dimensions. Return as JSON array with format: [{'label': 'person', 'confidence': 0.9, 'box': {'x': 10, 'y': 20, 'w': 100, 'h': 200}}]",
+            text=f"""Detect all people in this golf course image (image size: {w}x{h} pixels). 
+            For each person, provide bounding box coordinates as PIXEL VALUES (not percentages).
+            Return as JSON array: [{{"label": "person", "confidence": 0.9, "box": {{"x": 100, "y": 150, "w": 80, "h": 200}}}}]
+            Make sure x, y, w, h are actual pixel coordinates, not percentages.""",
             file_contents=[image_content]
         )
         
@@ -395,24 +401,59 @@ async def detect_persons_in_frame(frame: np.ndarray) -> List[DetectionResult]:
         
         try:
             detections_data = json.loads(response)
-            return [DetectionResult(**detection) for detection in detections_data]
-        except:
+            persons = []
+            
+            for detection in detections_data:
+                if detection.get("label") == "person":
+                    box = detection["box"]
+                    confidence = detection.get("confidence", 0.8)
+                    
+                    # Ensure coordinates are within frame bounds
+                    box["x"] = max(0, min(box["x"], w - 1))
+                    box["y"] = max(0, min(box["y"], h - 1))
+                    box["w"] = max(1, min(box["w"], w - box["x"]))
+                    box["h"] = max(1, min(box["h"], h - box["y"]))
+                    
+                    # Assign unique person ID
+                    person_id = assign_person_id(box, confidence)
+                    
+                    # Create PersonDetection object
+                    person = PersonDetection(
+                        person_id=person_id,
+                        confidence=confidence,
+                        box=box,
+                        center_point=calculate_box_center(box)
+                    )
+                    persons.append(person)
+            
+            return persons
+            
+        except Exception as parse_error:
+            print(f"AI response parsing error: {parse_error}")
             # Return demo detection if AI fails
             h, w = frame.shape[:2]
-            return [DetectionResult(
-                label="person",
-                confidence=0.8,
-                box={"x": int(w*0.25), "y": int(h*0.25), "w": int(w*0.5), "h": int(h*0.5)}
+            demo_box = {"x": int(w*0.25), "y": int(h*0.25), "w": int(w*0.5), "h": int(h*0.5)}
+            person_id = assign_person_id(demo_box, 0.5)
+            
+            return [PersonDetection(
+                person_id=person_id,
+                confidence=0.5,
+                box=demo_box,
+                center_point=calculate_box_center(demo_box)
             )]
             
     except Exception as e:
         print(f"Person detection error: {e}")
         # Return demo detection
         h, w = frame.shape[:2]
-        return [DetectionResult(
-            label="person",
+        demo_box = {"x": int(w*0.25), "y": int(h*0.25), "w": int(w*0.5), "h": int(h*0.5)}
+        person_id = assign_person_id(demo_box, 0.5)
+        
+        return [PersonDetection(
+            person_id=person_id,
             confidence=0.5,
-            box={"x": int(w*0.25), "y": int(h*0.25), "w": int(w*0.5), "h": int(h*0.5)}
+            box=demo_box,
+            center_point=calculate_box_center(demo_box)
         )]
 
 # API Routes
