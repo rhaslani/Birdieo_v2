@@ -174,14 +174,16 @@ class Round(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
     subject_id: str = Field(default_factory=lambda: f"SUB{str(uuid.uuid4())[:6].upper()}")
+    round_id: str = Field(default_factory=lambda: f"R{str(uuid.uuid4())[:6].upper()}")
+    course_name: str
     tee_time: datetime
     handedness: str
-    course_name: str
     expected_timeline: Dict[str, str]  # hole number -> expected time
     player_photos: List[PlayerPhoto] = []
-    clothing_breakdown: Optional[Dict[str, str]] = None
+    confirmed_clothing: Optional[Dict[str, str]] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed: bool = False
+    clips_generated: Dict[str, bool] = Field(default_factory=dict)  # hole -> generated status
 
 class VideoClip(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
