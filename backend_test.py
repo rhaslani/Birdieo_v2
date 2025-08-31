@@ -208,10 +208,12 @@ class BirdieoAPITester:
             url = f"{self.api_url}/checkin/upload-photo/{self.round_id}"
             headers = {'Authorization': f'Bearer {self.token}'}
             
+            # Use multipart form data properly
             files = {'file': ('test.png', test_image_data, 'image/png')}
             data = {'angle': 'front'}
             
-            response = self.session.post(url, data=data, files=files, headers=headers)
+            # Remove Content-Type header to let requests set it automatically for multipart
+            response = requests.post(url, data=data, files=files, headers=headers)
             
             if response.status_code == 200:
                 response_data = response.json()
