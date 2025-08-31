@@ -196,23 +196,45 @@ const LoginPage = () => {
   );
 };
 
-// Live Video Stream Component
-const LiveVideoStream = ({ className = "" }) => {
+// Live Video Stream Component with Computer Vision
+const LiveVideoStream = ({ className = "", showDetection = false }) => {
   const [streamUrl, setStreamUrl] = useState(`${API}/stream/frame`);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [persons, setPersons] = useState([]);
+  const [detectionEnabled, setDetectionEnabled] = useState(showDetection);
   const imgRef = useRef(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (imgRef.current) {
-        // Add timestamp to force refresh
-        setStreamUrl(`${API}/stream/frame?t=${Date.now()}`);
+        // Use detection endpoint if enabled
+        const endpoint = detectionEnabled ? '/stream/frame-with-detection' : '/stream/frame';
+        setStreamUrl(`${API}${endpoint}?t=${Date.now()}`);
       }
-    }, 1000); // Refresh every second
+    }, 2000); // Refresh every 2 seconds for better performance with AI processing
 
     return () => clearInterval(interval);
-  }, []);
+  }, [detectionEnabled]);
+
+  // Fetch person tracking information
+  useEffect(() => {
+    if (detectionEnabled) {
+      const fetchPersons = async () => {
+        try {
+          const response = await axios.get(`${API}/stream/persons`);
+          setPersons(response.data.active_persons || []);
+        } catch (error) {
+          console.error('Failed to fetch persons:', error);
+        }
+      };
+
+      const interval = setInterval(fetchPersons, 3000);
+      fetchPersons(); // Initial fetch
+      
+      return () => clearInterval(interval);
+    }
+  }, [detectionEnabled]);
 
   const handleImageLoad = () => {
     setIsLoading(false);
@@ -224,13 +246,34 @@ const LiveVideoStream = ({ className = "" }) => {
     setHasError(true);
   };
 
+  const toggleDetection = () => {
+    setDetectionEnabled(!detectionEnabled);
+  };
+
   return (
     <div className={`relative bg-gray-100 rounded-lg overflow-hidden ${className}`}>
+      {/* Detection Toggle */}
+      <div className="absolute top-3 left-3 z-10">
+        <Button
+          size="sm"
+          onClick={toggleDetection}
+          className={`${detectionEnabled 
+            ? 'bg-birdieo-navy hover:bg-birdieo-navy/90 text-white' 
+            : 'bg-white hover:bg-gray-50 text-birdieo-navy border border-gray-300'
+          } text-xs`}
+        >
+          <Eye className="w-3 h-3 mr-1" />
+          {detectionEnabled ? 'Hide Detection' : 'Show Detection'}
+        </Button>
+      </div>
+
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-5">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-birdieo-navy mx-auto mb-2"></div>
-            <p className="text-gray-600 text-sm">Loading stream...</p>
+            <p className="text-gray-600 text-sm">
+              {detectionEnabled ? 'Processing with AI...' : 'Loading stream...'}
+            </p>
           </div>
         </div>
       )}
@@ -254,10 +297,18 @@ const LiveVideoStream = ({ className = "" }) => {
       )}
       
       {/* Live indicator */}
-      <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
+      <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center z-10">
         <div className="w-2 h-2 bg-white rounded-full mr-1 animate-pulse"></div>
         LIVE
       </div>
+
+      {/* Person Count Indicator */}
+      {detectionEnabled && persons.length > 0 && (
+        <div className="absolute bottom-3 left-3 bg-birdieo-navy text-white px-3 py-1 rounded-full text-xs font-medium z-10">
+          <Users className="w-3 h-3 mr-1 inline" />
+          {persons.length} Person{persons.length !== 1 ? 's' : ''} Detected
+        </div>
+      )}
     </div>
   );
 };
