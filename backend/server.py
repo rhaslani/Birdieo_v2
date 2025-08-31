@@ -655,6 +655,37 @@ def get_current_frame():
         return Response(status_code=500)
     return Response(content=buf.tobytes(), media_type="image/jpeg")
 
+@api_router.get("/stream/frame-with-detection")
+async def get_frame_with_detection():
+    """Get current frame with person detection boxes and IDs"""
+    with _lock:
+        img = None if _latest_frame is None else _latest_frame.copy()
+    
+    if img is None:
+        return Response(status_code=503)
+    
+    try:
+        # Detect persons in the frame
+        persons = await detect_persons_in_frame(img)
+        
+        # Draw bounding boxes on the frame
+        processed_frame = draw_bounding_boxes(img, persons)
+        
+        # Encode the processed frame
+        ok, buf = cv2.imencode(".jpg", processed_frame, [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY])
+        if not ok:
+            return Response(status_code=500)
+        
+        return Response(content=buf.tobytes(), media_type="image/jpeg")
+        
+    except Exception as e:
+        print(f"Error processing frame with detection: {e}")
+        # Return original frame if processing fails
+        ok, buf = cv2.imencode(".jpg", img, [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY])
+        if not ok:
+            return Response(status_code=500)
+        return Response(content=buf.tobytes(), media_type="image/jpeg")
+
 @api_router.get("/stream/mjpeg")
 def mjpeg_stream():
     boundary = "frame"
