@@ -382,6 +382,7 @@ class BirdieoAPITester:
         self.test_start_checkin()
         self.test_upload_photo()
         self.test_complete_checkin()
+        self.test_capture_clip()
         
         # Round Management Tests
         print("\n📊 Round Management Tests")
