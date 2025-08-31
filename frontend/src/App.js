@@ -179,15 +179,18 @@ const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
     back: "Turn around to show your back, full body visible"
   };
 
+  // Reset photo when photoType changes or component becomes active
   useEffect(() => {
     if (isActive) {
+      setPhoto(null); // Reset photo for new photo type
+      setCountdown(false);
       startCamera();
     } else {
       stopCamera();
     }
 
     return () => stopCamera();
-  }, [isActive]);
+  }, [isActive, photoType]); // Added photoType dependency
 
   const startCamera = async () => {
     try {
