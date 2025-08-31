@@ -1080,7 +1080,7 @@ const RoundDetails = ({ roundId, onBack }) => {
                 <span>Shot Captured</span>
               </div>
               <div className="flex items-center">
-                <div className="hole-indicator opacity-50 w-8 h-8 text-xs mr-2">-</div>
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs mr-2">-</div>
                 <span>No Shot Available</span>
               </div>
             </div>
