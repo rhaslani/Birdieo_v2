@@ -51,11 +51,16 @@ SNAPSHOT_INTERVAL = 1.0
 MAX_WIDTH = 1280
 JPEG_QUALITY = 85
 
-# Global variables for live stream
+# Global variables for live stream and person tracking
 _latest_frame: Optional[np.ndarray] = None
 _latest_ts: float = 0.0
 _reader_running = True
 _lock = threading.Lock()
+
+# Person tracking variables
+_person_tracker = {}  # Dictionary to store person information
+_next_person_id = 1
+_person_id_lock = threading.Lock()
 
 # Create upload directories
 upload_dirs = [
