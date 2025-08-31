@@ -68,7 +68,8 @@ _person_id_lock = threading.Lock()
 # Create upload directories
 upload_dirs = [
     ROOT_DIR / "uploads" / "player_photos",
-    ROOT_DIR / "uploads" / "video_clips"
+    ROOT_DIR / "uploads" / "video_clips",
+    ROOT_DIR / "uploads" / "stream_clips"
 ]
 for dir_path in upload_dirs:
     dir_path.mkdir(parents=True, exist_ok=True)
