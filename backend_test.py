@@ -353,6 +353,108 @@ class BirdieoAPITester:
         else:
             return self.log_test("Get Round Clips", False, f"- {response}")
 
+    def test_golf_courses_endpoint(self):
+        """Test golf courses endpoint - specific requirements from review request"""
+        success, response = self.make_request('GET', '/courses', expected_status=200)
+        
+        if not success:
+            return self.log_test("Golf Courses Endpoint", False, f"- Request failed: {response}")
+        
+        # Check if response has courses key
+        if 'courses' not in response:
+            return self.log_test("Golf Courses Endpoint", False, "- Missing 'courses' key in response")
+        
+        courses = response['courses']
+        
+        # Test 1: Exactly 6 courses should be returned
+        if len(courses) != 6:
+            return self.log_test("Golf Courses Endpoint", False, f"- Expected 6 courses, got {len(courses)}")
+        
+        # Test 2: First course should be Lexington Golf Club
+        first_course = courses[0]
+        if first_course.get('name') != 'Lexington Golf Club':
+            return self.log_test("Golf Courses Endpoint", False, f"- First course should be 'Lexington Golf Club', got '{first_course.get('name')}'")
+        
+        # Test 3: Lexington Golf Club should have correct structure
+        lexington_required_fields = ['id', 'name', 'location']
+        for field in lexington_required_fields:
+            if field not in first_course:
+                return self.log_test("Golf Courses Endpoint", False, f"- Lexington Golf Club missing '{field}' field")
+        
+        if first_course.get('id') != 'lexington':
+            return self.log_test("Golf Courses Endpoint", False, f"- Lexington Golf Club should have id 'lexington', got '{first_course.get('id')}'")
+        
+        if first_course.get('location') != 'Lexington, NC':
+            return self.log_test("Golf Courses Endpoint", False, f"- Lexington Golf Club should have location 'Lexington, NC', got '{first_course.get('location')}'")
+        
+        # Test 4: All courses should have required fields (id, name, location)
+        required_fields = ['id', 'name', 'location']
+        for i, course in enumerate(courses):
+            for field in required_fields:
+                if field not in course:
+                    return self.log_test("Golf Courses Endpoint", False, f"- Course {i+1} missing '{field}' field")
+        
+        # Test 5: Remaining 5 courses should be from the expected list
+        expected_course_names = [
+            "Pinehurst Resort", "Augusta National Golf Club", "Pebble Beach Golf Links",
+            "St. Andrews Old Course", "Whistling Straits", "Torrey Pines Golf Course",
+            "Bethpage Black", "Kiawah Island Golf Resort", "Bandon Dunes Golf Resort",
+            "Chambers Bay"
+        ]
+        
+        remaining_courses = courses[1:]  # Skip Lexington Golf Club
+        for course in remaining_courses:
+            if course.get('name') not in expected_course_names:
+                return self.log_test("Golf Courses Endpoint", False, f"- Unexpected course name: '{course.get('name')}'")
+        
+        # Test 6: Verify randomness by making multiple calls
+        course_names_sets = []
+        for _ in range(3):
+            success_rand, response_rand = self.make_request('GET', '/courses', expected_status=200)
+            if success_rand and 'courses' in response_rand:
+                remaining_names = [c.get('name') for c in response_rand['courses'][1:]]  # Skip Lexington
+                course_names_sets.append(set(remaining_names))
+            time.sleep(0.5)  # Small delay between requests
+        
+        # Check if we got different combinations (randomness test)
+        all_same = all(names_set == course_names_sets[0] for names_set in course_names_sets)
+        randomness_note = "- Randomness: " + ("Not detected (may be coincidence)" if all_same else "Confirmed")
+        
+        details = f"- ✅ 6 courses returned, ✅ Lexington first, ✅ All fields present, ✅ Valid course names {randomness_note}"
+        return self.log_test("Golf Courses Endpoint", True, details)
+
+    def test_golf_courses_multiple_calls(self):
+        """Test golf courses endpoint multiple times to verify consistency and randomness"""
+        print("\n🎲 Testing Golf Courses Randomness...")
+        
+        lexington_always_first = True
+        course_combinations = []
+        
+        for i in range(5):
+            success, response = self.make_request('GET', '/courses', expected_status=200)
+            if success and 'courses' in response:
+                courses = response['courses']
+                
+                # Check Lexington is always first
+                if len(courses) > 0 and courses[0].get('name') != 'Lexington Golf Club':
+                    lexington_always_first = False
+                
+                # Collect the remaining course names for randomness analysis
+                if len(courses) >= 6:
+                    remaining_names = [c.get('name') for c in courses[1:]]
+                    course_combinations.append(tuple(remaining_names))
+            
+            time.sleep(0.3)  # Small delay between requests
+        
+        # Analyze randomness
+        unique_combinations = len(set(course_combinations))
+        total_calls = len(course_combinations)
+        
+        details = f"- Lexington always first: {lexington_always_first}, Unique combinations: {unique_combinations}/{total_calls}"
+        
+        success_result = lexington_always_first and total_calls > 0
+        return self.log_test("Golf Courses Randomness", success_result, details)
+
     def run_all_tests(self):
         """Run comprehensive API test suite"""
         print("🚀 Starting Birdieo.ai API Test Suite")
