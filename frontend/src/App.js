@@ -1673,37 +1673,50 @@ const Dashboard = () => {
 
         {/* Enhanced Live Course View */}
         <div className="mb-8">
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="glass-card border-0 shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg font-semibold text-birdieo-navy">
+                  <CardTitle className="text-xl font-bold text-birdieo-navy flex items-center">
+                    <Video className="mr-3 h-6 w-6" />
                     Live Course View - Enhanced AI Detection
                   </CardTitle>
                   <CardDescription>
                     Real-time view from Lexington Golf Course with precision person tracking
                   </CardDescription>
                 </div>
-                <Badge className="bg-green-100 text-green-800 border-green-200">
-                  Enhanced AI Model
-                </Badge>
+                <div className="flex items-center space-x-2">
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    Enhanced AI Model
+                  </Badge>
+                  <Badge 
+                    variant={streamHealth?.ok ? "default" : "destructive"} 
+                    className={streamHealth?.ok ? "bg-green-100 text-green-800 border-green-200" : ""}
+                  >
+                    {streamHealth?.ok ? 'LIVE' : 'Offline'}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <LiveVideoStream className="aspect-video" showDetection={true} />
-              <div className="mt-4 text-sm text-gray-600">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-500 rounded mr-2"></div>
-                    <span>Green boxes: Enhanced precision person detection</span>
+            <CardContent className="p-6">
+              <div className="relative">
+                <LiveVideoStream className="aspect-video rounded-lg overflow-hidden" showDetection={true} />
+                
+                {/* Enhanced Stream Info Overlay */}
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg">
+                    <div className="w-3 h-3 bg-green-500 rounded"></div>
+                    <span className="text-green-800 font-medium">Enhanced AI Detection Active</span>
                   </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                    <span>Red dots: Person tracking centers</span>
+                  <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-blue-800 font-medium">
+                      Last Update: {streamHealth?.age_seconds ? `${streamHealth.age_seconds.toFixed(1)}s ago` : 'N/A'}
+                    </span>
                   </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-blue-500 rounded mr-2"></div>
-                    <span>Higher accuracy with improved AI model</span>
+                  <div className="flex items-center space-x-2 p-3 bg-purple-50 rounded-lg">
+                    <Users className="w-3 h-3 text-purple-600" />
+                    <span className="text-purple-800 font-medium">Person Tracking: Active</span>
                   </div>
                 </div>
               </div>
