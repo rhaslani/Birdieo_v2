@@ -12,7 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Badge } from "./components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar";
 import { Progress } from "./components/ui/progress";
-import { Video, Play, Pause, Camera, Users, BarChart3, Settings, Upload, Download, Eye, CheckCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
+import { Video, Play, Pause, Camera, Users, BarChart3, Settings, Upload, Download, Eye, CheckCircle, Clock, MapPin, User, Check, X, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "./components/ui/sonner";
 
@@ -72,6 +73,580 @@ const useAuth = () => {
   return context;
 };
 
+// Logo Component
+const BirdieoLogo = ({ className = "w-10 h-10" }) => {
+  return (
+    <img 
+      src="https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/xb1o5tv1_BirdieoLogo.jpg"
+      alt="Birdieo Logo" 
+      className={`${className} object-contain`}
+      onError={(e) => {
+        // Fallback to icon if logo fails to load
+        e.target.style.display = 'none';
+        e.target.nextSibling.style.display = 'flex';
+      }}
+    />
+  );
+};
+
+// Camera Interface Component
+const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [stream, setStream] = useState(null);
+  const [photo, setPhoto] = useState(null);
+  const [isReady, setIsReady] = useState(false);
+
+  const photoInstructions = {
+    face: "Position your face clearly in the frame for identification",
+    front: "Stand facing the camera showing your full body from head to toe", 
+    side: "Turn to show your side profile, full body visible",
+    back: "Turn around to show your back, full body visible"
+  };
+
+  useEffect(() => {
+    if (isActive) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+
+    return () => stopCamera();
+  }, [isActive]);
+
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: 640, 
+          height: 480,
+          facingMode: photoType === 'face' ? 'user' : 'environment'
+        } 
+      });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        videoRef.current.onloadedmetadata = () => {
+          setIsReady(true);
+        };
+      }
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      toast.error('Unable to access camera. Please check permissions.');
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setIsReady(false);
+  };
+
+  const takePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      canvas.toBlob((blob) => {
+        setPhoto(URL.createObjectURL(blob));
+        onPhotoTaken(blob, photoType);
+        stopCamera();
+      }, 'image/jpeg', 0.8);
+    }
+  };
+
+  const retakePhoto = () => {
+    setPhoto(null);
+    startCamera();
+  };
+
+  if (!isActive) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-birdieo-navy">
+            Take {photoType.charAt(0).toUpperCase() + photoType.slice(1)} Photo
+          </h3>
+          <Button variant="outline" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+        
+        <p className="text-gray-600 mb-4">{photoInstructions[photoType]}</p>
+        
+        <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-video mb-4">
+          {!photo ? (
+            <>
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              <canvas ref={canvasRef} className="hidden" />
+              {!isReady && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-birdieo-navy mx-auto mb-2"></div>
+                    <p className="text-gray-600">Starting camera...</p>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <img src={photo} alt={`${photoType} photo`} className="w-full h-full object-cover" />
+          )}
+        </div>
+        
+        <div className="flex justify-center space-x-4">
+          {!photo ? (
+            <Button
+              onClick={takePhoto}
+              disabled={!isReady}
+              className="bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Take Photo
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={retakePhoto}
+                className="border-gray-300"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Retake
+              </Button>
+              <Button
+                onClick={() => onClose()}
+                className="bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Use Photo
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Clothing Confirmation Component
+const ClothingConfirmation = ({ clothingAnalysis, onConfirm, onSkip, isLoading }) => {
+  const [confirmedClothing, setConfirmedClothing] = useState({
+    hat: '',
+    top: '',
+    bottom: '',
+    shoes: ''
+  });
+
+  useEffect(() => {
+    if (clothingAnalysis) {
+      setConfirmedClothing({
+        hat: clothingAnalysis.hat?.description || '',
+        top: clothingAnalysis.top?.description || '',
+        bottom: clothingAnalysis.bottom?.description || '',
+        shoes: clothingAnalysis.shoes?.description || ''
+      });
+    }
+  }, [clothingAnalysis]);
+
+  const handleConfirm = () => {
+    onConfirm(confirmedClothing);
+  };
+
+  if (!clothingAnalysis) return null;
+
+  return (
+    <Card className="bg-white border-0 shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-birdieo-navy">
+          Confirm Your Clothing
+        </CardTitle>
+        <CardDescription>
+          Please confirm or correct what you're wearing for accurate player identification
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {Object.entries(confirmedClothing).map(([item, description]) => {
+          const confidence = clothingAnalysis[item]?.confidence || 0;
+          return (
+            <div key={item} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-birdieo-navy font-medium capitalize">
+                  {item}
+                </Label>
+                <Badge 
+                  variant="outline" 
+                  className={confidence > 0.7 ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}
+                >
+                  {confidence > 0 ? `${Math.round(confidence * 100)}% confident` : 'Not detected'}
+                </Badge>
+              </div>
+              <Input
+                value={description}
+                onChange={(e) => setConfirmedClothing(prev => ({
+                  ...prev,
+                  [item]: e.target.value
+                }))}
+                placeholder={`Describe your ${item}...`}
+                className="border-2 border-gray-200 focus:border-birdieo-blue"
+              />
+            </div>
+          );
+        })}
+        
+        <div className="flex space-x-4 pt-4">
+          <Button
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className="flex-1 bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            ) : (
+              <Check className="w-4 h-4 mr-2" />
+            )}
+            Confirm Clothing
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onSkip}
+            className="border-gray-300"
+          >
+            Skip for Now
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Round Start Component
+const RoundStart = ({ onComplete, onCancel }) => {
+  const [step, setStep] = useState(1);
+  const [courses, setCourses] = useState([]);
+  const [roundData, setRoundData] = useState({
+    course_name: '',
+    tee_time: '',
+    handedness: ''
+  });
+  const [currentRound, setCurrentRound] = useState(null);
+  const [photos, setPhotos] = useState({});
+  const [activeCamera, setActiveCamera] = useState(null);
+  const [clothingAnalysis, setClothingAnalysis] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  const photoTypes = ['face', 'front', 'side', 'back'];
+  const completedPhotos = Object.keys(photos);
+
+  useEffect(() => {
+    fetchCourses();
+    // Set today's date and time
+    const now = new Date();
+    const timeString = now.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM format
+    setRoundData(prev => ({ ...prev, tee_time: timeString }));
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await axios.get(`${API}/courses`);
+      setCourses(response.data.courses);
+    } catch (error) {
+      console.error('Failed to fetch courses:', error);
+      toast.error('Failed to load courses');
+    }
+  };
+
+  const handleStartRound = async () => {
+    try {
+      const response = await axios.post(`${API}/checkin/start`, roundData);
+      setCurrentRound(response.data.round);
+      setStep(2);
+      toast.success('Round started! Now take your photos.');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to start round');
+    }
+  };
+
+  const handlePhotoTaken = async (blob, photoType) => {
+    if (!currentRound) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', blob, `${photoType}.jpg`);
+      formData.append('angle', photoType);
+
+      const response = await axios.post(
+        `${API}/checkin/upload-photo/${currentRound.id}`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+
+      setPhotos(prev => ({ ...prev, [photoType]: response.data.photo }));
+      
+      // If this photo has clothing analysis, store it
+      if (response.data.photo.clothing_analysis) {
+        setClothingAnalysis(response.data.photo.clothing_analysis);
+      }
+
+      toast.success(`${photoType.charAt(0).toUpperCase() + photoType.slice(1)} photo uploaded!`);
+      
+      // If all photos are taken, move to clothing confirmation
+      if (completedPhotos.length === photoTypes.length - 1) { // -1 because we just added one
+        setStep(3);
+      }
+    } catch (error) {
+      toast.error('Failed to upload photo');
+    } finally {
+      setIsUploading(false);
+      setActiveCamera(null);
+    }
+  };
+
+  const handleClothingConfirm = async (confirmedClothing) => {
+    if (!currentRound) return;
+
+    setIsConfirming(true);
+    try {
+      await axios.post(`${API}/checkin/confirm-clothing/${currentRound.id}`, confirmedClothing);
+      
+      // Complete the check-in
+      const response = await axios.post(`${API}/checkin/complete/${currentRound.id}`);
+      
+      toast.success('Round setup complete! Automatic clip generated for Hole 1.');
+      onComplete(response.data);
+    } catch (error) {
+      toast.error('Failed to complete round setup');
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
+  const handleSkipClothing = async () => {
+    if (!currentRound) return;
+
+    try {
+      const response = await axios.post(`${API}/checkin/complete/${currentRound.id}`);
+      toast.success('Round setup complete!');
+      onComplete(response.data);
+    } catch (error) {
+      toast.error('Failed to complete round setup');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <BirdieoLogo className="w-16 h-16 mr-4" />
+            <div className="w-10 h-10 bg-birdieo-navy rounded-lg flex items-center justify-center" style={{display: 'none'}}>
+              <Video className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-birdieo-navy">Start Your Round</h1>
+              <p className="text-gray-600">Set up your golf round with AI-powered player tracking</p>
+            </div>
+          </div>
+          
+          {/* Progress Steps */}
+          <div className="flex items-center justify-center space-x-4 mb-8">
+            {[
+              { number: 1, title: "Round Details", icon: Clock },
+              { number: 2, title: "Take Photos", icon: Camera },
+              { number: 3, title: "Confirm Clothing", icon: CheckCircle }
+            ].map(({ number, title, icon: Icon }) => (
+              <div key={number} className="flex items-center">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  step >= number ? 'bg-birdieo-navy text-white' : 'bg-gray-200 text-gray-500'
+                }`}>
+                  {step > number ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                </div>
+                <span className={`ml-2 text-sm font-medium ${
+                  step >= number ? 'text-birdieo-navy' : 'text-gray-500'
+                }`}>
+                  {title}
+                </span>
+                {number < 3 && <div className="w-8 h-px bg-gray-300 mx-4" />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Step 1: Round Details */}
+        {step === 1 && (
+          <Card className="bg-white border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-birdieo-navy">Round Details</CardTitle>
+              <CardDescription>Enter your tee time and course information</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label className="text-birdieo-navy font-medium">Golf Course</Label>
+                <Select value={roundData.course_name} onValueChange={(value) => 
+                  setRoundData(prev => ({ ...prev, course_name: value }))
+                }>
+                  <SelectTrigger className="border-2 border-gray-200 focus:border-birdieo-blue">
+                    <SelectValue placeholder="Select your golf course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {courses.map(course => (
+                      <SelectItem key={course.id} value={course.name}>
+                        <div className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-2 text-gray-500" />
+                          <div>
+                            <div className="font-medium">{course.name}</div>
+                            <div className="text-sm text-gray-500">{course.location}</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-birdieo-navy font-medium">Tee Time</Label>
+                <Input
+                  type="datetime-local"
+                  value={roundData.tee_time}
+                  onChange={(e) => setRoundData(prev => ({ ...prev, tee_time: e.target.value }))}
+                  className="border-2 border-gray-200 focus:border-birdieo-blue"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-birdieo-navy font-medium">Handedness</Label>
+                <Select value={roundData.handedness} onValueChange={(value) =>
+                  setRoundData(prev => ({ ...prev, handedness: value }))
+                }>
+                  <SelectTrigger className="border-2 border-gray-200 focus:border-birdieo-blue">
+                    <SelectValue placeholder="Select your handedness" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="right">Right-handed</SelectItem>
+                    <SelectItem value="left">Left-handed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex space-x-4 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={onCancel}
+                  className="flex-1 border-gray-300"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleStartRound}
+                  disabled={!roundData.course_name || !roundData.tee_time || !roundData.handedness}
+                  className="flex-1 bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
+                >
+                  Continue to Photos
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 2: Take Photos */}
+        {step === 2 && (
+          <Card className="bg-white border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-birdieo-navy">Player Photos</CardTitle>
+              <CardDescription>
+                Take photos from different angles for AI identification
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {photoTypes.map(photoType => (
+                  <div key={photoType} className="text-center">
+                    <div className={`aspect-square border-2 border-dashed rounded-lg flex items-center justify-center mb-2 ${
+                      photos[photoType] ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50'
+                    }`}>
+                      {photos[photoType] ? (
+                        <div className="text-center">
+                          <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-1" />
+                          <span className="text-xs text-green-700 font-medium">Complete</span>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <Camera className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+                          <span className="text-xs text-gray-500">Not taken</span>
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={photos[photoType] ? "outline" : "default"}
+                      onClick={() => setActiveCamera(photoType)}
+                      disabled={isUploading}
+                      className={photos[photoType] ? "border-gray-300" : "bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"}
+                    >
+                      {photos[photoType] ? 'Retake' : 'Take'} {photoType.charAt(0).toUpperCase() + photoType.slice(1)}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center">
+                <Progress value={(completedPhotos.length / photoTypes.length) * 100} className="mb-4" />
+                <p className="text-sm text-gray-600">
+                  {completedPhotos.length} of {photoTypes.length} photos completed
+                </p>
+                {completedPhotos.length === photoTypes.length && (
+                  <Button
+                    onClick={() => setStep(3)}
+                    className="mt-4 bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
+                  >
+                    Continue to Clothing Confirmation
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 3: Clothing Confirmation */}
+        {step === 3 && (
+          <ClothingConfirmation
+            clothingAnalysis={clothingAnalysis}
+            onConfirm={handleClothingConfirm}
+            onSkip={handleSkipClothing}
+            isLoading={isConfirming}
+          />
+        )}
+
+        {/* Camera Interface */}
+        <CameraInterface
+          photoType={activeCamera}
+          isActive={!!activeCamera}
+          onPhotoTaken={handlePhotoTaken}
+          onClose={() => setActiveCamera(null)}
+        />
+      </div>
+    </div>
+  );
+};
+
 // Login Component with new Birdieo branding
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -111,8 +686,11 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-2xl border-0 bg-white">
         <CardHeader className="text-center space-y-4 pb-8">
-          <div className="mx-auto w-20 h-20 bg-birdieo-navy rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-            <Video className="w-10 h-10 text-white" />
+          <div className="mx-auto mb-4">
+            <BirdieoLogo className="w-20 h-20 mx-auto" />
+            <div className="w-20 h-20 bg-birdieo-navy rounded-2xl flex items-center justify-center shadow-lg mx-auto" style={{display: 'none'}}>
+              <Video className="w-10 h-10 text-white" />
+            </div>
           </div>
           <div>
             <CardTitle className="text-3xl font-bold text-birdieo-navy mb-2">
@@ -318,6 +896,7 @@ const Dashboard = () => {
   const [rounds, setRounds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [streamHealth, setStreamHealth] = useState(null);
+  const [showRoundStart, setShowRoundStart] = useState(false);
   const { user, logout } = useAuth();
 
   useEffect(() => {
@@ -363,6 +942,12 @@ const Dashboard = () => {
     }
   };
 
+  const handleRoundStartComplete = (roundData) => {
+    setShowRoundStart(false);
+    fetchRounds(); // Refresh rounds list
+    toast.success(`Round setup complete! Subject ID: ${roundData.subject_id}`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -374,6 +959,15 @@ const Dashboard = () => {
     );
   }
 
+  if (showRoundStart) {
+    return (
+      <RoundStart 
+        onComplete={handleRoundStartComplete}
+        onCancel={() => setShowRoundStart(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -381,7 +975,8 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-birdieo-navy rounded-lg flex items-center justify-center mr-3">
+              <BirdieoLogo className="w-10 h-10 mr-3" />
+              <div className="w-10 h-10 bg-birdieo-navy rounded-lg flex items-center justify-center mr-3" style={{display: 'none'}}>
                 <Video className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-birdieo-navy">
@@ -513,9 +1108,12 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Button className="h-24 bg-birdieo-navy hover:bg-birdieo-navy/90 text-white flex flex-col justify-center">
+                <Button 
+                  className="h-24 bg-birdieo-navy hover:bg-birdieo-navy/90 text-white flex flex-col justify-center"
+                  onClick={() => setShowRoundStart(true)}
+                >
                   <Camera className="w-8 h-8 mb-2" />
-                  <span className="font-medium">Start Check-in</span>
+                  <span className="font-medium">Start New Round</span>
                 </Button>
                 <Button variant="outline" className="h-24 border-2 border-gray-200 hover:bg-gray-50 flex flex-col justify-center">
                   <BarChart3 className="w-8 h-8 mb-2 text-birdieo-navy" />
@@ -540,7 +1138,7 @@ const Dashboard = () => {
             <CardTitle className="text-lg font-semibold text-birdieo-navy">Your Golf Rounds</CardTitle>
             <CardDescription>
               {rounds.length === 0 
-                ? "No rounds yet. Start your first check-in to begin recording!"
+                ? "No rounds yet. Start your first round to begin recording!"
                 : `${rounds.length} round${rounds.length !== 1 ? 's' : ''} recorded`
               }
             </CardDescription>
@@ -551,9 +1149,12 @@ const Dashboard = () => {
                 <Video className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-lg font-semibold text-gray-600 mb-2">No rounds yet</h3>
                 <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                  Start your first check-in to begin recording your golf shots with AI-powered player recognition.
+                  Start your first round to begin recording your golf shots with AI-powered player recognition.
                 </p>
-                <Button className="bg-birdieo-navy hover:bg-birdieo-navy/90 text-white">
+                <Button 
+                  className="bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
+                  onClick={() => setShowRoundStart(true)}
+                >
                   <Camera className="w-4 h-4 mr-2" />
                   Start Your First Round
                 </Button>
@@ -571,14 +1172,24 @@ const Dashboard = () => {
                           <h4 className="font-semibold text-birdieo-navy text-lg mr-3">
                             {round.course_name}
                           </h4>
-                          <Badge variant="outline" className="bg-birdieo-blue/10 text-birdieo-blue border-birdieo-blue/20">
+                          <Badge variant="outline" className="bg-birdieo-blue/10 text-birdieo-blue border-birdieo-blue/20 mr-2">
                             {round.handedness} handed
                           </Badge>
+                          {round.completed && (
+                            <Badge className="bg-green-100 text-green-800 border-green-200">
+                              Complete
+                            </Badge>
+                          )}
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm text-gray-600">
                             <span className="font-medium">Subject ID:</span> {round.subject_id}
                           </p>
+                          {round.round_id && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Round ID:</span> {round.round_id}
+                            </p>
+                          )}
                           <p className="text-sm text-gray-600">
                             <span className="font-medium">Tee Time:</span> {new Date(round.tee_time).toLocaleString()}
                           </p>
@@ -598,9 +1209,9 @@ const Dashboard = () => {
                         </Button>
                       </div>
                     </div>
-                    {round.clothing_breakdown && (
+                    {round.confirmed_clothing && (
                       <div className="mt-4 flex flex-wrap gap-2">
-                        {Object.entries(round.clothing_breakdown).map(([item, description]) => (
+                        {Object.entries(round.confirmed_clothing).map(([item, description]) => (
                           <Badge key={item} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
                             <span className="font-medium">{item}:</span> {description}
                           </Badge>
