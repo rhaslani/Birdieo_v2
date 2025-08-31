@@ -185,9 +185,11 @@ const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
     if (isActive) {
       setPhoto(null); // Reset photo for new photo type
       setCountdown(false);
+      setIsReady(false); // Also reset camera ready state
       startCamera();
     } else {
       stopCamera();
+      setPhoto(null); // Ensure photo is cleared when camera is closed
     }
 
     return () => stopCamera();
