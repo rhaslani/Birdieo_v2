@@ -191,6 +191,8 @@ class AnalysisResponse(BaseModel):
     width: Optional[int] = None
     height: Optional[int] = None
     detections: List[DetectionResult] = []
+    persons: List[PersonDetection] = []
+    processed_frame_url: Optional[str] = None
     ts: Optional[float] = None
     reason: Optional[str] = None
 
