@@ -93,10 +93,10 @@ const BirdieoLogo = ({ className = "w-10 h-10" }) => {
 // Silhouette Guide Component with Your Specific Images
 const SilhouetteGuide = ({ photoType, className = "" }) => {
   const silhouetteUrls = {
-    face: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/d2gqmkk2_Face.png",
-    front: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/snfmjx50_front.png", 
-    side: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/f6k0ujya_Side.jpeg",
-    back: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/gbgxs70i_Back.png"
+    face: "https://customer-assets.emergentagent.com/job_birdieo-tracker/artifacts/5tdvrwvk_Face.png",
+    front: "https://customer-assets.emergentagent.com/job_birdieo-tracker/artifacts/jc74mj6g_front.png", 
+    side: "https://customer-assets.emergentagent.com/job_birdieo-tracker/artifacts/vjvd5lm4_Side.jpeg",
+    back: "https://customer-assets.emergentagent.com/job_birdieo-tracker/artifacts/rdgf1f9r_Back.png"
   };
   
   const silhouetteUrl = silhouetteUrls[photoType];
