@@ -13,7 +13,8 @@ import { Badge } from "./components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar";
 import { Progress } from "./components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
-import { Video, Play, Pause, Camera, Users, BarChart3, Settings, Upload, Download, Eye, CheckCircle, Clock, MapPin, User, Check, X, RotateCcw, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./components/ui/dialog";
+import { Video, Play, Pause, Camera, Users, BarChart3, Settings, Upload, Download, Eye, CheckCircle, Clock, MapPin, User, Check, X, RotateCcw, Plus, Share2, ExternalLink, Trophy, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "./components/ui/sonner";
 
@@ -89,13 +90,13 @@ const BirdieoLogo = ({ className = "w-10 h-10" }) => {
   );
 };
 
-// Silhouette Guide Component with Specific Images
+// Silhouette Guide Component with Your Specific Images
 const SilhouetteGuide = ({ photoType, className = "" }) => {
   const silhouetteUrls = {
-    face: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/2ysq2zoq_Face.png",
-    front: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/ukfp7pth_front.png", 
-    side: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/l71ihavi_Side.jpeg",
-    back: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/lxridhgc_Back.png"
+    face: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/d2gqmkk2_Face.png",
+    front: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/snfmjx50_front.png", 
+    side: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/f6k0ujya_Side.jpeg",
+    back: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/gbgxs70i_Back.png"
   };
   
   const silhouetteUrl = silhouetteUrls[photoType];
@@ -190,7 +191,7 @@ const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
     }
 
     return () => stopCamera();
-  }, [isActive, photoType]); // Added photoType dependency
+  }, [isActive, photoType]); // Added photoType dependency for proper reset
 
   const startCamera = async () => {
     try {
@@ -641,7 +642,7 @@ const RoundStart = ({ onComplete, onCancel }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
@@ -682,7 +683,7 @@ const RoundStart = ({ onComplete, onCancel }) => {
 
         {/* Step 1: Round Details */}
         {step === 1 && (
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="glass-card border-0 shadow-2xl">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-birdieo-navy">Round Details</CardTitle>
               <CardDescription>Enter your tee time and course information</CardDescription>
@@ -690,9 +691,10 @@ const RoundStart = ({ onComplete, onCancel }) => {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label className="text-birdieo-navy font-medium">Golf Course</Label>
-                <Select value={roundData.course_name} onValueChange={(value) => 
-                  setRoundData(prev => ({ ...prev, course_name: value }))
-                }>
+                <Select 
+                  value={roundData.course_name} 
+                  onValueChange={(value) => setRoundData(prev => ({ ...prev, course_name: value }))}
+                >
                   <SelectTrigger className="border-2 border-gray-200 focus:border-birdieo-blue">
                     <SelectValue placeholder="Select your golf course" />
                   </SelectTrigger>
@@ -759,11 +761,11 @@ const RoundStart = ({ onComplete, onCancel }) => {
 
         {/* Step 2: Take Photos */}
         {step === 2 && (
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="glass-card border-0 shadow-2xl">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-birdieo-navy">Player Photos</CardTitle>
               <CardDescription>
-                Take photos from different angles for AI identification (with 5-second timer)
+                Take photos from different angles for AI identification (with 5-second timer and silhouette guides)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -835,6 +837,403 @@ const RoundStart = ({ onComplete, onCancel }) => {
           onClose={() => setActiveCamera(null)}
         />
       </div>
+    </div>
+  );
+};
+
+// Round Details Component - Advanced UI
+const RoundDetails = ({ roundId, onBack }) => {
+  const [round, setRound] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedClip, setSelectedClip] = useState(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
+
+  useEffect(() => {
+    loadRoundDetails();
+  }, [roundId]);
+
+  const loadRoundDetails = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/rounds/${roundId}`);
+      setRound(response.data);
+    } catch (error) {
+      console.error('Failed to load round details:', error);
+      toast.error('Failed to load round details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const formatTime = (dateString) => {
+    return new Date(dateString).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const handleClipPlay = (clip) => {
+    setSelectedClip(clip);
+    setIsVideoModalOpen(true);
+    setIsVideoPlaying(false);
+    setVideoProgress(0);
+  };
+
+  const handleShare = async (clip) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `My shot from Hole ${clip.hole_number}`,
+          text: `Check out my golf shot from ${round.course_name}!`,
+          url: window.location.href
+        });
+      } catch (error) {
+        console.log('Error sharing:', error);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard!');
+    }
+  };
+
+  const renderHoleGrid = () => {
+    const holes = Array.from({ length: 18 }, (_, i) => i + 1);
+    const clipsMap = (round?.clips || []).reduce((acc, clip) => {
+      acc[clip.hole_number] = clip;
+      return acc;
+    }, {});
+
+    return (
+      <div className="grid grid-cols-6 md:grid-cols-9 gap-4">
+        {holes.map((holeNum) => {
+          const clip = clipsMap[holeNum];
+          const hasClip = !!clip;
+          
+          return (
+            <div
+              key={holeNum}
+              className={`hole-indicator ${hasClip ? 'has-clip' : ''} ${
+                hasClip ? 'cursor-pointer' : 'cursor-default opacity-50'
+              }`}
+              onClick={hasClip ? () => handleClipPlay(clip) : undefined}
+            >
+              {holeNum}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const getGolfShotImage = (holeNumber) => {
+    const images = {
+      1: 'https://images.unsplash.com/photo-1596727362302-b8d891c42ab8?w=400',
+      3: 'https://images.unsplash.com/photo-1591491640784-3232eb748d4b?w=400',
+      5: 'https://images.unsplash.com/photo-1662224107406-cfbd51edd90c?w=400',
+      7: 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=400',
+      9: 'https://images.pexels.com/photos/1325653/pexels-photo-1325653.jpeg?w=400',
+      12: 'https://images.pexels.com/photos/1637731/pexels-photo-1637731.jpeg?w=400',
+      15: 'https://images.unsplash.com/photo-1562589461-cd172cbacbeb?w=400',
+      18: 'https://images.unsplash.com/photo-1621005570352-6418df03796b?w=400'
+    };
+    return images[holeNumber] || images[1];
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-birdieo-navy mx-auto mb-4"></div>
+          <p className="text-birdieo-navy font-medium">Loading round details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!round) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+        <Card className="glass-card border-0 shadow-2xl max-w-md mx-auto">
+          <CardContent className="p-8 text-center">
+            <Trophy className="h-16 w-16 text-emerald-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-emerald-800 mb-4">Round Not Found</h2>
+            <p className="text-emerald-600 mb-6">
+              The round you're looking for doesn't exist or you don't have access to it.
+            </p>
+            <Button onClick={onBack} className="btn-golf-primary">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
+      {/* Header */}
+      <header className="glass-card border-0 shadow-lg mb-8">
+        <div className="container-padding py-6">
+          <div className="flex items-center justify-between">
+            <Button
+              onClick={onBack}
+              className="btn-golf-secondary"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+            
+            <div className="flex items-center space-x-4">
+              <BirdieoLogo className="w-10 h-10" />
+              <div className="text-right">
+                <h1 className="text-xl font-bold text-emerald-800">Round Details</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="container-padding">
+        {/* Round Info */}
+        <Card className="glass-card border-0 shadow-lg mb-8 fade-in">
+          <CardContent className="p-8">
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-4">
+                  <h2 className="text-3xl font-bold text-emerald-800">
+                    {round.course_name}
+                  </h2>
+                  <Badge className="bg-green-100 text-green-800">
+                    {round.completed ? 'Completed' : 'Active'}
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-emerald-600">
+                  <div className="flex items-center">
+                    <Calendar className="h-5 w-5 mr-3" />
+                    <div>
+                      <p className="font-medium">Date</p>
+                      <p className="text-sm">{formatDate(round.tee_time)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 mr-3" />
+                    <div>
+                      <p className="font-medium">Tee Time</p>
+                      <p className="text-sm">{formatTime(round.tee_time)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <User className="h-5 w-5 mr-3" />
+                    <div>
+                      <p className="font-medium">Player</p>
+                      <p className="text-sm capitalize">{round.handedness} handed</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Video className="h-5 w-5 mr-3" />
+                    <div>
+                      <p className="font-medium">Subject ID</p>
+                      <p className="text-sm">{round.subject_id}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Course Map */}
+        <Card className="glass-card border-0 shadow-lg mb-8 slide-up">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-emerald-800 flex items-center">
+              <MapPin className="mr-3 h-6 w-6" />
+              Course Map - Hole by Hole
+            </CardTitle>
+            <CardDescription className="text-emerald-600">
+              Click on holes with checkmarks to view your shots
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="p-8">
+            {renderHoleGrid()}
+            
+            <div className="mt-8 flex items-center justify-center space-x-8 text-sm text-emerald-600">
+              <div className="flex items-center">
+                <div className="hole-indicator has-clip w-8 h-8 text-xs mr-2">✓</div>
+                <span>Shot Captured</span>
+              </div>
+              <div className="flex items-center">
+                <div className="hole-indicator opacity-50 w-8 h-8 text-xs mr-2">-</div>
+                <span>No Shot Available</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Mock Clips for Demo */}
+        <Card className="glass-card border-0 shadow-lg mb-8 fade-in">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-emerald-800 flex items-center">
+              <Video className="mr-3 h-6 w-6" />
+              Your Golf Shots
+            </CardTitle>
+            <CardDescription className="text-emerald-600">
+              View, share, and download your captured shots
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="p-8">
+            <div className="clips-grid">
+              {[1, 3, 5, 7, 9, 12, 15, 18].map((holeNum) => (
+                <Card key={holeNum} className="course-card overflow-hidden">
+                  <div 
+                    className="relative h-40 cursor-pointer group overflow-hidden"
+                    onClick={() => handleClipPlay({ hole_number: holeNum, duration_sec: 10 })}
+                  >
+                    <img 
+                      src={getGolfShotImage(holeNum)}
+                      alt={`Golf shot hole ${holeNum}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    
+                    {/* Play button overlay */}
+                    <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
+                      <div className="bg-white bg-opacity-80 rounded-full p-3 group-hover:bg-opacity-100 transition-all group-hover:scale-110">
+                        <Play className="h-8 w-8 text-emerald-800 fill-emerald-800" />
+                      </div>
+                    </div>
+                    
+                    {/* Duration badge */}
+                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                      10s
+                    </div>
+                    
+                    {/* Hole number badge */}
+                    <div className="absolute top-2 left-2 bg-emerald-600 text-white text-sm font-bold px-2 py-1 rounded">
+                      #{holeNum}
+                    </div>
+                  </div>
+                  
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-emerald-800">
+                        Hole {holeNum}
+                      </h4>
+                      <div className="flex space-x-1">
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleShare({ hole_number: holeNum });
+                          }}
+                          className="btn-golf-secondary text-xs px-2 py-1"
+                        >
+                          <Share2 className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast.success('Download started!');
+                          }}
+                          className="btn-golf-secondary text-xs px-2 py-1"
+                        >
+                          <Download className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-emerald-600 text-sm mb-1">
+                      Great shot captured automatically
+                    </p>
+                    <p className="text-blue-600 text-xs">
+                      📹 AI Camera Angle
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Video Modal */}
+      <Dialog open={isVideoModalOpen} onOpenChange={setIsVideoModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-emerald-800">
+              <Play className="mr-2 h-5 w-5" />
+              Hole {selectedClip?.hole_number} - Your Shot
+            </DialogTitle>
+            <DialogDescription className="text-emerald-600">
+              Duration: {selectedClip?.duration_sec}s • Captured automatically
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="golf-video-container">
+            <div className="aspect-video relative overflow-hidden bg-black">
+              <img 
+                src={getGolfShotImage(selectedClip?.hole_number)}
+                alt={`Golf shot hole ${selectedClip?.hole_number}`}
+                className="w-full h-full object-cover"
+              />
+              
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <h3 className="text-2xl font-bold mb-2">Golf Shot Video</h3>
+                  <p className="text-white text-opacity-90 mb-4">
+                    Hole {selectedClip?.hole_number} • {selectedClip?.duration_sec} seconds
+                  </p>
+                  <Button
+                    onClick={() => toast.success('Video playback simulation!')}
+                    className="bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm border-2 border-white border-opacity-50 rounded-full p-6"
+                  >
+                    <Play className="h-16 w-16 text-white fill-white" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-center space-x-4 mt-6">
+            <Button
+              onClick={() => toast.success('Video playback simulation!')}
+              className="btn-golf-primary"
+            >
+              <Play className="mr-2 h-4 w-4" />
+              Play Video
+            </Button>
+            <Button
+              onClick={() => handleShare(selectedClip)}
+              className="btn-golf-secondary"
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Share Shot
+            </Button>
+            <Button
+              onClick={() => toast.success('Download started!')}
+              className="btn-golf-secondary"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -1092,6 +1491,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [streamHealth, setStreamHealth] = useState(null);
   const [showRoundStart, setShowRoundStart] = useState(false);
+  const [selectedRound, setSelectedRound] = useState(null);
   const { user, logout } = useAuth();
 
   useEffect(() => {
@@ -1143,6 +1543,10 @@ const Dashboard = () => {
     toast.success(`Round setup complete! Subject ID: ${roundData.subject_id}`);
   };
 
+  const handleViewRound = (round) => {
+    setSelectedRound(round);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -1159,6 +1563,15 @@ const Dashboard = () => {
       <RoundStart 
         onComplete={handleRoundStartComplete}
         onCancel={() => setShowRoundStart(false)}
+      />
+    );
+  }
+
+  if (selectedRound) {
+    return (
+      <RoundDetails 
+        roundId={selectedRound.id}
+        onBack={() => setSelectedRound(null)}
       />
     );
   }
@@ -1365,6 +1778,7 @@ const Dashboard = () => {
                   <div 
                     key={round.id} 
                     className="p-6 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => handleViewRound(round)}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
