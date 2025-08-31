@@ -13,7 +13,7 @@ import { Badge } from "./components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar";
 import { Progress } from "./components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
-import { Video, Play, Pause, Camera, Users, BarChart3, Settings, Upload, Download, Eye, CheckCircle, Clock, MapPin, User, Check, X, RotateCcw } from "lucide-react";
+import { Video, Play, Pause, Camera, Users, BarChart3, Settings, Upload, Download, Eye, CheckCircle, Clock, MapPin, User, Check, X, RotateCcw, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "./components/ui/sonner";
 
@@ -89,13 +89,93 @@ const BirdieoLogo = ({ className = "w-10 h-10" }) => {
   );
 };
 
-// Camera Interface Component
+// Silhouette Guide Component
+const SilhouetteGuide = ({ photoType, className = "" }) => {
+  const silhouetteUrl = "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/tqa9gz29_image.png";
+  
+  const getSilhouetteStyle = () => {
+    switch (photoType) {
+      case 'side':
+        return { transform: 'scaleX(-1)' }; // Flip for left side view
+      case 'back':
+        return { transform: 'scaleX(-1) rotate(180deg)' }; // Back view
+      case 'front':
+      default:
+        return {}; // Front view - no transformation
+    }
+  };
+
+  if (photoType === 'face') {
+    // Face silhouette - just a simple circle
+    return (
+      <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${className}`}>
+        <div className="w-48 h-48 border-4 border-white/60 rounded-full bg-white/10"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${className}`}>
+      <img 
+        src={silhouetteUrl}
+        alt={`${photoType} silhouette guide`}
+        className="max-w-xs max-h-full opacity-30"
+        style={getSilhouetteStyle()}
+        onError={(e) => {
+          // Fallback to basic outline if image fails
+          e.target.style.display = 'none';
+        }}
+      />
+      {/* Fallback outline */}
+      <div className="w-24 h-64 border-4 border-white/60 rounded-full bg-white/10" style={{display: 'none'}}></div>
+    </div>
+  );
+};
+
+// Countdown Timer Component
+const CountdownTimer = ({ seconds, onComplete, isActive }) => {
+  const [timeLeft, setTimeLeft] = useState(seconds);
+
+  useEffect(() => {
+    if (!isActive) {
+      setTimeLeft(seconds);
+      return;
+    }
+
+    if (timeLeft === 0) {
+      onComplete();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setTimeLeft(timeLeft - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [timeLeft, isActive, onComplete, seconds]);
+
+  if (!isActive || timeLeft === 0) return null;
+
+  return (
+    <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+      <div className="text-center">
+        <div className="text-8xl font-bold text-white mb-4 animate-pulse">
+          {timeLeft}
+        </div>
+        <p className="text-white text-xl">Get ready...</p>
+      </div>
+    </div>
+  );
+};
+
+// Enhanced Camera Interface Component
 const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [isReady, setIsReady] = useState(false);
+  const [countdown, setCountdown] = useState(false);
 
   const photoInstructions = {
     face: "Position your face clearly in the frame for identification",
@@ -144,6 +224,10 @@ const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
     setIsReady(false);
   };
 
+  const startCountdown = () => {
+    setCountdown(true);
+  };
+
   const takePhoto = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
@@ -159,12 +243,14 @@ const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
         setPhoto(URL.createObjectURL(blob));
         onPhotoTaken(blob, photoType);
         stopCamera();
+        setCountdown(false);
       }, 'image/jpeg', 0.8);
     }
   };
 
   const retakePhoto = () => {
     setPhoto(null);
+    setCountdown(false);
     startCamera();
   };
 
@@ -194,6 +280,17 @@ const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
                 className="w-full h-full object-cover"
               />
               <canvas ref={canvasRef} className="hidden" />
+              
+              {/* Silhouette Guide Overlay */}
+              {isReady && <SilhouetteGuide photoType={photoType} />}
+              
+              {/* Countdown Timer */}
+              <CountdownTimer 
+                seconds={5} 
+                isActive={countdown}
+                onComplete={takePhoto}
+              />
+              
               {!isReady && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
@@ -211,12 +308,12 @@ const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
         <div className="flex justify-center space-x-4">
           {!photo ? (
             <Button
-              onClick={takePhoto}
-              disabled={!isReady}
+              onClick={startCountdown}
+              disabled={!isReady || countdown}
               className="bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
             >
               <Camera className="w-4 h-4 mr-2" />
-              Take Photo
+              {countdown ? 'Taking Photo...' : 'Take Photo (5s timer)'}
             </Button>
           ) : (
             <>
@@ -243,7 +340,7 @@ const CameraInterface = ({ onPhotoTaken, photoType, isActive, onClose }) => {
   );
 };
 
-// Clothing Confirmation Component
+// Enhanced Clothing Confirmation Component
 const ClothingConfirmation = ({ clothingAnalysis, onConfirm, onSkip, isLoading }) => {
   const [confirmedClothing, setConfirmedClothing] = useState({
     hat: '',
@@ -251,6 +348,12 @@ const ClothingConfirmation = ({ clothingAnalysis, onConfirm, onSkip, isLoading }
     bottom: '',
     shoes: ''
   });
+  
+  const [manualEntries, setManualEntries] = useState([]);
+
+  // Clothing options for dropdowns
+  const clothingItems = ['Hat', 'Cap', 'Visor', 'Polo Shirt', 'T-Shirt', 'Long Sleeve', 'Sweater', 'Jacket', 'Vest', 'Shorts', 'Pants', 'Skirt', 'Golf Shoes', 'Sneakers', 'Sandals'];
+  const colors = ['Black', 'White', 'Gray', 'Navy', 'Blue', 'Red', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Khaki', 'Cream', 'Maroon'];
 
   useEffect(() => {
     if (clothingAnalysis) {
@@ -263,8 +366,37 @@ const ClothingConfirmation = ({ clothingAnalysis, onConfirm, onSkip, isLoading }
     }
   }, [clothingAnalysis]);
 
+  const addManualEntry = () => {
+    setManualEntries([...manualEntries, { item: '', color: '', id: Date.now() }]);
+  };
+
+  const updateManualEntry = (id, field, value) => {
+    setManualEntries(entries => 
+      entries.map(entry => 
+        entry.id === id ? { ...entry, [field]: value } : entry
+      )
+    );
+  };
+
+  const removeManualEntry = (id) => {
+    setManualEntries(entries => entries.filter(entry => entry.id !== id));
+  };
+
   const handleConfirm = () => {
-    onConfirm(confirmedClothing);
+    // Combine AI analysis with manual entries
+    const finalClothing = { ...confirmedClothing };
+    
+    // Add manual entries to description
+    manualEntries.forEach(entry => {
+      if (entry.item && entry.color) {
+        const description = `${entry.color} ${entry.item}`;
+        // Add to appropriate category or create additional field
+        if (!finalClothing.additional) finalClothing.additional = [];
+        finalClothing.additional.push(description);
+      }
+    });
+    
+    onConfirm(finalClothing);
   };
 
   if (!clothingAnalysis) return null;
@@ -279,34 +411,95 @@ const ClothingConfirmation = ({ clothingAnalysis, onConfirm, onSkip, isLoading }
           Please confirm or correct what you're wearing for accurate player identification
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {Object.entries(confirmedClothing).map(([item, description]) => {
-          const confidence = clothingAnalysis[item]?.confidence || 0;
-          return (
-            <div key={item} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-birdieo-navy font-medium capitalize">
-                  {item}
-                </Label>
-                <Badge 
-                  variant="outline" 
-                  className={confidence > 0.7 ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}
-                >
-                  {confidence > 0 ? `${Math.round(confidence * 100)}% confident` : 'Not detected'}
-                </Badge>
+      <CardContent className="space-y-6">
+        {/* AI Analysis Results */}
+        <div className="space-y-4">
+          <h4 className="font-medium text-birdieo-navy">AI Analysis Results:</h4>
+          {Object.entries(confirmedClothing).map(([item, description]) => {
+            const confidence = clothingAnalysis[item]?.confidence || 0;
+            return (
+              <div key={item} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-birdieo-navy font-medium capitalize">
+                    {item}
+                  </Label>
+                  <Badge 
+                    variant="outline" 
+                    className={confidence > 0.7 ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}
+                  >
+                    {confidence > 0 ? `${Math.round(confidence * 100)}% confident` : 'Not detected'}
+                  </Badge>
+                </div>
+                <Input
+                  value={description}
+                  onChange={(e) => setConfirmedClothing(prev => ({
+                    ...prev,
+                    [item]: e.target.value
+                  }))}
+                  placeholder={`Describe your ${item}...`}
+                  className="border-2 border-gray-200 focus:border-birdieo-blue"
+                />
               </div>
-              <Input
-                value={description}
-                onChange={(e) => setConfirmedClothing(prev => ({
-                  ...prev,
-                  [item]: e.target.value
-                }))}
-                placeholder={`Describe your ${item}...`}
-                className="border-2 border-gray-200 focus:border-birdieo-blue"
-              />
+            );
+          })}
+        </div>
+
+        {/* Manual Entry Section */}
+        <div className="border-t pt-4">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-medium text-birdieo-navy">Additional Items:</h4>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addManualEntry}
+              className="border-birdieo-blue text-birdieo-blue hover:bg-birdieo-blue hover:text-white"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Item
+            </Button>
+          </div>
+          
+          {manualEntries.map((entry) => (
+            <div key={entry.id} className="flex items-center space-x-2 mb-3">
+              <Select value={entry.color} onValueChange={(value) => updateManualEntry(entry.id, 'color', value)}>
+                <SelectTrigger className="w-32 border-gray-200">
+                  <SelectValue placeholder="Color" />
+                </SelectTrigger>
+                <SelectContent>
+                  {colors.map(color => (
+                    <SelectItem key={color} value={color}>{color}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={entry.item} onValueChange={(value) => updateManualEntry(entry.id, 'item', value)}>
+                <SelectTrigger className="flex-1 border-gray-200">
+                  <SelectValue placeholder="Item" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clothingItems.map(item => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => removeManualEntry(entry.id)}
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                <X className="w-4 h-4" />
+              </Button>
             </div>
-          );
-        })}
+          ))}
+          
+          {manualEntries.length === 0 && (
+            <p className="text-sm text-gray-500">Click "Add Item" to manually specify additional clothing items</p>
+          )}
+        </div>
         
         <div className="flex space-x-4 pt-4">
           <Button
@@ -572,7 +765,7 @@ const RoundStart = ({ onComplete, onCancel }) => {
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-birdieo-navy">Player Photos</CardTitle>
               <CardDescription>
-                Take photos from different angles for AI identification
+                Take photos from different angles for AI identification (with 5-second timer)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -611,6 +804,7 @@ const RoundStart = ({ onComplete, onCancel }) => {
                 <Progress value={(completedPhotos.length / photoTypes.length) * 100} className="mb-4" />
                 <p className="text-sm text-gray-600">
                   {completedPhotos.length} of {photoTypes.length} photos completed
+                  {completedPhotos.length > 0 && " • Photos include silhouette guides and 5-second countdown"}
                 </p>
                 {completedPhotos.length === photoTypes.length && (
                   <Button
@@ -635,7 +829,7 @@ const RoundStart = ({ onComplete, onCancel }) => {
           />
         )}
 
-        {/* Camera Interface */}
+        {/* Enhanced Camera Interface */}
         <CameraInterface
           photoType={activeCamera}
           isActive={!!activeCamera}
@@ -774,7 +968,7 @@ const LoginPage = () => {
   );
 };
 
-// Live Video Stream Component with Computer Vision
+// Live Video Stream Component with Enhanced Computer Vision
 const LiveVideoStream = ({ className = "", showDetection = false }) => {
   const [streamUrl, setStreamUrl] = useState(`${API}/stream/frame`);
   const [isLoading, setIsLoading] = useState(true);
@@ -786,11 +980,11 @@ const LiveVideoStream = ({ className = "", showDetection = false }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (imgRef.current) {
-        // Use detection endpoint if enabled
+        // Use enhanced detection endpoint
         const endpoint = detectionEnabled ? '/stream/frame-with-detection' : '/stream/frame';
         setStreamUrl(`${API}${endpoint}?t=${Date.now()}`);
       }
-    }, 2000); // Refresh every 2 seconds for better performance with AI processing
+    }, 1500); // Faster refresh for better detection visibility
 
     return () => clearInterval(interval);
   }, [detectionEnabled]);
@@ -807,7 +1001,7 @@ const LiveVideoStream = ({ className = "", showDetection = false }) => {
         }
       };
 
-      const interval = setInterval(fetchPersons, 3000);
+      const interval = setInterval(fetchPersons, 2000); // More frequent updates
       fetchPersons(); // Initial fetch
       
       return () => clearInterval(interval);
@@ -841,7 +1035,7 @@ const LiveVideoStream = ({ className = "", showDetection = false }) => {
           } text-xs`}
         >
           <Eye className="w-3 h-3 mr-1" />
-          {detectionEnabled ? 'Hide Detection' : 'Show Detection'}
+          {detectionEnabled ? 'Enhanced AI' : 'Show Detection'}
         </Button>
       </div>
 
@@ -850,7 +1044,7 @@ const LiveVideoStream = ({ className = "", showDetection = false }) => {
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-birdieo-navy mx-auto mb-2"></div>
             <p className="text-gray-600 text-sm">
-              {detectionEnabled ? 'Processing with AI...' : 'Loading stream...'}
+              {detectionEnabled ? 'Processing with Enhanced AI...' : 'Loading stream...'}
             </p>
           </div>
         </div>
@@ -880,18 +1074,21 @@ const LiveVideoStream = ({ className = "", showDetection = false }) => {
         LIVE
       </div>
 
-      {/* Person Count Indicator */}
-      {detectionEnabled && persons.length > 0 && (
+      {/* Enhanced Person Detection Indicator */}
+      {detectionEnabled && (
         <div className="absolute bottom-3 left-3 bg-birdieo-navy text-white px-3 py-1 rounded-full text-xs font-medium z-10">
           <Users className="w-3 h-3 mr-1 inline" />
-          {persons.length} Person{persons.length !== 1 ? 's' : ''} Detected
+          {persons.length > 0 
+            ? `${persons.length} Person${persons.length !== 1 ? 's' : ''} Tracked`
+            : 'Enhanced AI Active'
+          }
         </div>
       )}
     </div>
   );
 };
 
-// Dashboard Component with new Birdieo design
+// Dashboard Component
 const Dashboard = () => {
   const [rounds, setRounds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1014,7 +1211,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-lg font-semibold text-birdieo-navy">Live Stream Status</CardTitle>
-                  <CardDescription>Real-time monitoring of golf course cameras</CardDescription>
+                  <CardDescription>Real-time monitoring with enhanced AI person detection</CardDescription>
                 </div>
                 <Badge 
                   variant={streamHealth?.ok ? "default" : "destructive"} 
@@ -1029,7 +1226,7 @@ const Dashboard = () => {
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 mb-1">Stream Health</span>
                   <span className="font-semibold text-lg text-birdieo-navy">
-                    {streamHealth?.ok ? '✓ Active' : '✗ Inactive'}
+                    {streamHealth?.ok ? '✓ Enhanced AI Active' : '✗ Inactive'}
                   </span>
                 </div>
                 <div className="flex flex-col">
@@ -1061,21 +1258,21 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Live Course View with Computer Vision */}
+        {/* Enhanced Live Course View */}
         <div className="mb-8">
           <Card className="bg-white border-0 shadow-sm">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-lg font-semibold text-birdieo-navy">
-                    Live Course View - Hole 1 with AI Person Detection
+                    Live Course View - Enhanced AI Detection
                   </CardTitle>
                   <CardDescription>
-                    Real-time view from Lexington Golf Course with computer vision person tracking
+                    Real-time view from Lexington Golf Course with precision person tracking
                   </CardDescription>
                 </div>
-                <Badge className="bg-birdieo-blue/10 text-birdieo-blue border-birdieo-blue/20">
-                  AI Vision Enabled
+                <Badge className="bg-green-100 text-green-800 border-green-200">
+                  Enhanced AI Model
                 </Badge>
               </div>
             </CardHeader>
@@ -1085,11 +1282,15 @@ const Dashboard = () => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
                     <div className="w-3 h-3 bg-green-500 rounded mr-2"></div>
-                    <span>Green boxes: Detected persons with unique IDs</span>
+                    <span>Green boxes: Enhanced precision person detection</span>
                   </div>
                   <div className="flex items-center">
                     <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                    <span>Red dots: Person center points</span>
+                    <span>Red dots: Person tracking centers</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-blue-500 rounded mr-2"></div>
+                    <span>Higher accuracy with improved AI model</span>
                   </div>
                 </div>
               </div>
@@ -1103,7 +1304,7 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-birdieo-navy">Quick Actions</CardTitle>
               <CardDescription>
-                Start a new round or manage your golf sessions
+                Start a new round with enhanced photo capture and AI analysis
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1114,6 +1315,7 @@ const Dashboard = () => {
                 >
                   <Camera className="w-8 h-8 mb-2" />
                   <span className="font-medium">Start New Round</span>
+                  <span className="text-xs opacity-80">Enhanced Camera + AI</span>
                 </Button>
                 <Button variant="outline" className="h-24 border-2 border-gray-200 hover:bg-gray-50 flex flex-col justify-center">
                   <BarChart3 className="w-8 h-8 mb-2 text-birdieo-navy" />
@@ -1138,8 +1340,8 @@ const Dashboard = () => {
             <CardTitle className="text-lg font-semibold text-birdieo-navy">Your Golf Rounds</CardTitle>
             <CardDescription>
               {rounds.length === 0 
-                ? "No rounds yet. Start your first round to begin recording!"
-                : `${rounds.length} round${rounds.length !== 1 ? 's' : ''} recorded`
+                ? "No rounds yet. Start your first round with enhanced camera and AI features!"
+                : `${rounds.length} round${rounds.length !== 1 ? 's' : ''} recorded with AI precision`
               }
             </CardDescription>
           </CardHeader>
@@ -1149,7 +1351,7 @@ const Dashboard = () => {
                 <Video className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-lg font-semibold text-gray-600 mb-2">No rounds yet</h3>
                 <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                  Start your first round to begin recording your golf shots with AI-powered player recognition.
+                  Start your first round with enhanced camera interface, silhouette guides, 5-second countdown timer, and AI-powered clothing analysis.
                 </p>
                 <Button 
                   className="bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
@@ -1194,7 +1396,7 @@ const Dashboard = () => {
                             <span className="font-medium">Tee Time:</span> {new Date(round.tee_time).toLocaleString()}
                           </p>
                           <p className="text-sm text-gray-600">
-                            <span className="font-medium">Photos:</span> {round.player_photos?.length || 0} captured
+                            <span className="font-medium">Photos:</span> {round.player_photos?.length || 0} captured with AI analysis
                           </p>
                         </div>
                       </div>
