@@ -222,6 +222,105 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
+def calculate_box_center(box: Dict[str, int]) -> Dict[str, int]:
+    """Calculate center point of bounding box"""
+    return {
+        "x": box["x"] + box["w"] // 2,
+        "y": box["y"] + box["h"] // 2
+    }
+
+def calculate_distance(point1: Dict[str, int], point2: Dict[str, int]) -> float:
+    """Calculate Euclidean distance between two points"""
+    return ((point1["x"] - point2["x"]) ** 2 + (point1["y"] - point2["y"]) ** 2) ** 0.5
+
+def assign_person_id(detection_box: Dict[str, int], confidence: float) -> str:
+    """Assign unique ID to detected person based on location tracking"""
+    global _next_person_id, _person_tracker
+    
+    current_time = datetime.now(timezone.utc)
+    center_point = calculate_box_center(detection_box)
+    
+    with _person_id_lock:
+        # Find closest existing person (within reasonable distance)
+        min_distance = float('inf')
+        closest_person_id = None
+        
+        for person_id, person_info in _person_tracker.items():
+            # Only consider persons seen in last 30 seconds
+            time_diff = (current_time - person_info["last_seen"]).total_seconds()
+            if time_diff < 30:
+                distance = calculate_distance(center_point, person_info["center_point"])
+                if distance < min_distance and distance < 100:  # 100 pixels threshold
+                    min_distance = distance
+                    closest_person_id = person_id
+        
+        if closest_person_id:
+            # Update existing person
+            _person_tracker[closest_person_id].update({
+                "box": detection_box,
+                "center_point": center_point,
+                "last_seen": current_time,
+                "confidence": confidence
+            })
+            return closest_person_id
+        else:
+            # Create new person
+            new_person_id = f"P{_next_person_id:03d}"
+            _next_person_id += 1
+            
+            _person_tracker[new_person_id] = {
+                "box": detection_box,
+                "center_point": center_point,
+                "first_seen": current_time,
+                "last_seen": current_time,
+                "confidence": confidence
+            }
+            
+            return new_person_id
+
+def draw_bounding_boxes(frame: np.ndarray, persons: List[PersonDetection]) -> np.ndarray:
+    """Draw bounding boxes and labels on frame"""
+    frame_copy = frame.copy()
+    
+    for person in persons:
+        box = person.box
+        person_id = person.person_id
+        confidence = person.confidence
+        
+        # Define colors (BGR format for OpenCV)
+        box_color = (0, 255, 0)  # Green
+        text_color = (255, 255, 255)  # White
+        bg_color = (0, 200, 0)  # Dark green for text background
+        
+        # Draw bounding box
+        cv2.rectangle(frame_copy, 
+                     (box["x"], box["y"]), 
+                     (box["x"] + box["w"], box["y"] + box["h"]), 
+                     box_color, 2)
+        
+        # Prepare label text
+        label = f"{person_id} ({confidence:.2f})"
+        
+        # Get text size for background rectangle
+        (text_width, text_height), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+        
+        # Draw text background
+        cv2.rectangle(frame_copy,
+                     (box["x"], box["y"] - text_height - 10),
+                     (box["x"] + text_width + 10, box["y"]),
+                     bg_color, -1)
+        
+        # Draw text
+        cv2.putText(frame_copy, label,
+                   (box["x"] + 5, box["y"] - 5),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, text_color, 2)
+        
+        # Draw center point
+        center = calculate_box_center(box)
+        cv2.circle(frame_copy, (center["x"], center["y"]), 3, (0, 0, 255), -1)  # Red dot
+    
+    return frame_copy
+
 def generate_expected_timeline(tee_time: datetime) -> Dict[str, str]:
     """Generate expected timeline for 18 holes (15 minutes apart)"""
     timeline = {}
