@@ -1,41 +1,90 @@
+/* Birdieo.ai Custom CSS with New Brand Colors */
+
 .App {
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  line-height: 1.6;
+}
+
+/* Custom Birdieo Brand Colors */
+:root {
+  --birdieo-navy: #1a365d;
+  --birdieo-blue: #0ea5e9;
+  --birdieo-blue-light: #7dd3fc;
+  --birdieo-gray: #64748b;
+  --birdieo-gray-light: #f1f5f9;
+}
+
+.text-birdieo-navy {
+  color: var(--birdieo-navy);
+}
+
+.text-birdieo-blue {
+  color: var(--birdieo-blue);
+}
+
+.bg-birdieo-navy {
+  background-color: var(--birdieo-navy);
+}
+
+.bg-birdieo-blue {
+  background-color: var(--birdieo-blue);
+}
+
+.border-birdieo-navy {
+  border-color: var(--birdieo-navy);
+}
+
+.border-birdieo-blue {
+  border-color: var(--birdieo-blue);
+}
+
+.hover\:bg-birdieo-navy\/90:hover {
+  background-color: rgb(26 54 93 / 0.9);
+}
+
+.hover\:bg-birdieo-blue:hover {
+  background-color: var(--birdieo-blue);
+}
+
+.hover\:text-white:hover {
+  color: white;
+}
+
+.focus\:border-birdieo-blue:focus {
+  border-color: var(--birdieo-blue);
+}
+
+.focus\:ring-birdieo-blue:focus {
+  --tw-ring-color: var(--birdieo-blue);
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--birdieo-gray-light);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #10b981;
+  background: var(--birdieo-blue);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #059669;
+  background: var(--birdieo-navy);
 }
 
 /* Smooth transitions for interactive elements */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
 .transition-colors {
   transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-}
-
-/* Custom gradient backgrounds */
-.bg-gradient-emerald {
-  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-}
-
-/* Glass morphism effect */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 /* Hover animations */
@@ -45,7 +94,7 @@
 }
 
 /* Loading animation */
-@keyframes pulse-emerald {
+@keyframes pulse-birdieo {
   0%, 100% {
     opacity: 1;
   }
@@ -54,70 +103,124 @@
   }
 }
 
-.animate-pulse-emerald {
-  animation: pulse-emerald 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Custom button styles */
-.btn-gradient {
-  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-  transition: all 0.2s ease-in-out;
-}
-
-.btn-gradient:hover {
-  background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+.animate-pulse-birdieo {
+  animation: pulse-birdieo 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Card hover effects */
 .card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(26, 54, 93, 0.1), 0 8px 10px -6px rgba(26, 54, 93, 0.1);
   transition: all 0.3s ease-out;
 }
 
 /* Focus styles for accessibility */
-.focus-emerald:focus {
-  outline: 2px solid #10b981;
+.focus-birdieo:focus {
+  outline: 2px solid var(--birdieo-blue);
   outline-offset: 2px;
 }
 
+/* Enhanced form styles */
+.form-input {
+  border: 2px solid #e2e8f0;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.form-input:focus {
+  border-color: var(--birdieo-blue);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* Button enhancements */
+.btn-birdieo-primary {
+  background: var(--birdieo-navy);
+  color: white;
+  border: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-birdieo-primary:hover {
+  background: rgb(26 54 93 / 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.3);
+}
+
+.btn-birdieo-secondary {
+  background: var(--birdieo-blue);
+  color: white;
+  border: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-birdieo-secondary:hover {
+  background: rgb(14 165 233 / 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+/* Live video stream styles */
+.live-stream-container {
+  position: relative;
+  background: #f8fafc;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+}
+
+.live-indicator {
+  background: #ef4444;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.live-indicator-dot {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Status indicators */
+.status-badge-online {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-badge-offline {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* Custom selection styles */
+::selection {
+  background: rgba(14, 165, 233, 0.2);
+  color: var(--birdieo-navy);
+}
+
 /* Typography enhancements */
-.text-gradient {
-  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+.text-gradient-birdieo {
+  background: linear-gradient(135deg, var(--birdieo-navy) 0%, var(--birdieo-blue) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-/* Stream preview enhancements */
-.stream-container {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-}
-
-.stream-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 184, 166, 0.1) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.stream-container:hover .stream-overlay {
-  opacity: 1;
-}
-
-/* Badge enhancements */
-.badge-emerald {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  color: #065f46;
-  border: 1px solid #10b981;
 }
 
 /* Mobile responsiveness */
@@ -129,6 +232,20 @@
   .mobile-padding {
     padding: 1rem;
   }
+  
+  .grid-mobile-1 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none;
+  }
+  
+  .grid-mobile-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Dark mode support (for future enhancement) */
@@ -139,48 +256,9 @@
   }
 }
 
-/* Animation for status indicators */
-@keyframes status-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-  }
-}
-
-.status-active {
-  animation: status-pulse 2s infinite;
-}
-
-/* Enhanced form styles */
-.form-input {
-  border: 2px solid #e5e7eb;
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.form-input:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-/* Loading spinner enhancement */
-.spinner-emerald {
-  border-color: #10b981 transparent #10b981 transparent;
-}
-
-/* Table hover effects */
+/* Enhanced table hover effects */
 .table-row:hover {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(20, 184, 166, 0.05) 100%);
-}
-
-/* Custom selection styles */
-::selection {
-  background: rgba(16, 185, 129, 0.2);
-  color: #065f46;
+  background: rgba(14, 165, 233, 0.05);
 }
 
 /* Video preview enhancements */
@@ -188,7 +266,7 @@
   position: relative;
   border-radius: 8px;
   overflow: hidden;
-  background: #f3f4f6;
+  background: var(--birdieo-gray-light);
 }
 
 .video-preview::after {
@@ -198,6 +276,115 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, transparent 49%, rgba(16, 185, 129, 0.05) 50%, transparent 51%);
+  background: linear-gradient(45deg, transparent 49%, rgba(14, 165, 233, 0.05) 50%, transparent 51%);
   pointer-events: none;
+}
+
+/* Loading spinner enhancement */
+.spinner-birdieo {
+  border-color: var(--birdieo-blue) transparent var(--birdieo-blue) transparent;
+}
+
+/* Badge enhancements */
+.badge-birdieo {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--birdieo-navy);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
+
+.badge-birdieo-navy {
+  background: rgba(26, 54, 93, 0.1);
+  color: var(--birdieo-navy);
+  border: 1px solid rgba(26, 54, 93, 0.2);
+}
+
+/* Animation for status indicators */
+@keyframes status-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(14, 165, 233, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0);
+  }
+}
+
+.status-active {
+  animation: status-pulse 2s infinite;
+}
+
+/* Professional shadows */
+.shadow-birdieo {
+  box-shadow: 0 4px 25px -5px rgba(26, 54, 93, 0.1), 0 10px 10px -5px rgba(26, 54, 93, 0.04);
+}
+
+.shadow-birdieo-lg {
+  box-shadow: 0 10px 25px -3px rgba(26, 54, 93, 0.1), 0 4px 6px -2px rgba(26, 54, 93, 0.05);
+}
+
+/* Enhanced focus states */
+.focus-visible:focus-visible {
+  outline: 2px solid var(--birdieo-blue);
+  outline-offset: 2px;
+}
+
+/* Improved button states */
+.button-birdieo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button-birdieo:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Professional card styling */
+.card-birdieo {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.card-birdieo:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--birdieo-blue);
+}
+
+/* Professional layout spacing */
+.section-spacing {
+  margin-bottom: 2rem;
+}
+
+.content-spacing {
+  margin-bottom: 1.5rem;
+}
+
+/* Professional typography */
+.heading-primary {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--birdieo-navy);
+  margin-bottom: 0.5rem;
+}
+
+.heading-secondary {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--birdieo-navy);
+  margin-bottom: 0.75rem;
+}
+
+.text-muted {
+  color: var(--birdieo-gray);
+}
+
+.text-emphasis {
+  color: var(--birdieo-navy);
+  font-weight: 600;
 }

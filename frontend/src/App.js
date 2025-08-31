@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import axios from "axios";
 import "./App.css";
@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Badge } from "./components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar";
 import { Progress } from "./components/ui/progress";
-import { Calendar } from "lucide-react";
+import { Video, Play, Pause, Camera, Users, BarChart3, Settings, Upload, Download, Eye, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "./components/ui/sonner";
 
@@ -72,7 +72,7 @@ const useAuth = () => {
   return context;
 };
 
-// Login Component
+// Login Component with new Birdieo branding
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -108,33 +108,35 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/90 backdrop-blur-lg">
-        <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mb-4">
-            <Calendar className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white">
+        <CardHeader className="text-center space-y-4 pb-8">
+          <div className="mx-auto w-20 h-20 bg-birdieo-navy rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+            <Video className="w-10 h-10 text-white" />
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-            Birdieo.ai
-          </CardTitle>
-          <CardDescription className="text-gray-600">
-            Transform your golf experience with AI-powered shot recording
-          </CardDescription>
+          <div>
+            <CardTitle className="text-3xl font-bold text-birdieo-navy mb-2">
+              BIRDIEO.AI
+            </CardTitle>
+            <CardDescription className="text-gray-600 text-base">
+              Transform your golf experience with AI-powered shot recording
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs value={isLogin ? "login" : "register"} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100">
               <TabsTrigger 
                 value="login" 
                 onClick={() => setIsLogin(true)}
-                className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white"
+                className="data-[state=active]:bg-birdieo-navy data-[state=active]:text-white"
               >
                 Login
               </TabsTrigger>
               <TabsTrigger 
                 value="register" 
                 onClick={() => setIsLogin(false)}
-                className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white"
+                className="data-[state=active]:bg-birdieo-navy data-[state=active]:text-white"
               >
                 Register
               </TabsTrigger>
@@ -143,45 +145,45 @@ const LoginPage = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name" className="text-birdieo-navy font-medium">Full Name</Label>
                   <Input
                     id="name"
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     required={!isLogin}
-                    className="border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                    className="border-2 border-gray-200 focus:border-birdieo-blue focus:ring-birdieo-blue"
                   />
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-birdieo-navy font-medium">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   required
-                  className="border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                  className="border-2 border-gray-200 focus:border-birdieo-blue focus:ring-birdieo-blue"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-birdieo-navy font-medium">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
                   required
-                  className="border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                  className="border-2 border-gray-200 focus:border-birdieo-blue focus:ring-birdieo-blue"
                 />
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-2.5"
+                className="w-full bg-birdieo-navy hover:bg-birdieo-navy/90 text-white font-semibold py-3 text-base"
                 disabled={loading}
               >
                 {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
@@ -194,7 +196,73 @@ const LoginPage = () => {
   );
 };
 
-// Dashboard Component
+// Live Video Stream Component
+const LiveVideoStream = ({ className = "" }) => {
+  const [streamUrl, setStreamUrl] = useState(`${API}/stream/frame`);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (imgRef.current) {
+        // Add timestamp to force refresh
+        setStreamUrl(`${API}/stream/frame?t=${Date.now()}`);
+      }
+    }, 1000); // Refresh every second
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleImageLoad = () => {
+    setIsLoading(false);
+    setHasError(false);
+  };
+
+  const handleImageError = () => {
+    setIsLoading(false);
+    setHasError(true);
+  };
+
+  return (
+    <div className={`relative bg-gray-100 rounded-lg overflow-hidden ${className}`}>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-birdieo-navy mx-auto mb-2"></div>
+            <p className="text-gray-600 text-sm">Loading stream...</p>
+          </div>
+        </div>
+      )}
+      
+      {hasError ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="text-center">
+            <Video className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+            <p className="text-gray-600">Stream temporarily unavailable</p>
+          </div>
+        </div>
+      ) : (
+        <img 
+          ref={imgRef}
+          src={streamUrl}
+          alt="Live golf course view"
+          className="w-full h-full object-cover"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+        />
+      )}
+      
+      {/* Live indicator */}
+      <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
+        <div className="w-2 h-2 bg-white rounded-full mr-1 animate-pulse"></div>
+        LIVE
+      </div>
+    </div>
+  );
+};
+
+// Dashboard Component with new Birdieo design
 const Dashboard = () => {
   const [rounds, setRounds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -204,6 +272,10 @@ const Dashboard = () => {
   useEffect(() => {
     fetchRounds();
     checkStreamHealth();
+    
+    // Refresh stream health every 30 seconds
+    const interval = setInterval(checkStreamHealth, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchRounds = async () => {
@@ -224,6 +296,7 @@ const Dashboard = () => {
       setStreamHealth(response.data);
     } catch (error) {
       console.error('Stream health check failed:', error);
+      setStreamHealth({ ok: false, age_seconds: null });
     }
   };
 
@@ -241,9 +314,9 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-birdieo-navy mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your golf rounds...</p>
         </div>
       </div>
@@ -251,22 +324,22 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white/90 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mr-3">
-                <Calendar className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-birdieo-navy rounded-lg flex items-center justify-center mr-3">
+                <Video className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                Birdieo.ai
+              <h1 className="text-2xl font-bold text-birdieo-navy">
+                BIRDIEO.AI
               </h1>
             </div>
             <div className="flex items-center space-x-4">
               <Avatar>
-                <AvatarFallback className="bg-emerald-100 text-emerald-700">
+                <AvatarFallback className="bg-birdieo-blue text-white">
                   {user?.name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -290,36 +363,45 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Live Stream Status */}
         <div className="mb-8">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="bg-white border-0 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Live Stream Status</span>
-                <Badge variant={streamHealth?.ok ? "default" : "destructive"} className="bg-emerald-100 text-emerald-800 border-emerald-200">
-                  {streamHealth?.ok ? 'Active' : 'Inactive'}
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-birdieo-navy">Live Stream Status</CardTitle>
+                  <CardDescription>Real-time monitoring of golf course cameras</CardDescription>
+                </div>
+                <Badge 
+                  variant={streamHealth?.ok ? "default" : "destructive"} 
+                  className={streamHealth?.ok ? "bg-green-100 text-green-800 border-green-200" : ""}
+                >
+                  {streamHealth?.ok ? 'Online' : 'Offline'}
                 </Badge>
-              </CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Stream Health</span>
-                  <span className="font-semibold text-lg">
-                    {streamHealth?.ok ? '✓ Online' : '✗ Offline'}
+                  <span className="text-sm text-gray-500 mb-1">Stream Health</span>
+                  <span className="font-semibold text-lg text-birdieo-navy">
+                    {streamHealth?.ok ? '✓ Active' : '✗ Inactive'}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Last Update</span>
-                  <span className="font-semibold text-lg">
+                  <span className="text-sm text-gray-500 mb-1">Last Update</span>
+                  <span className="font-semibold text-lg text-birdieo-navy">
                     {streamHealth?.age_seconds ? `${streamHealth.age_seconds.toFixed(1)}s ago` : 'N/A'}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button 
                     onClick={captureTestClip}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                    className="bg-birdieo-navy hover:bg-birdieo-navy/90 text-white"
                   >
+                    <Camera className="w-4 h-4 mr-2" />
                     Capture Test Clip
                   </Button>
+                </div>
+                <div className="flex items-center">
                   <Button 
                     variant="outline" 
                     onClick={checkStreamHealth}
@@ -333,61 +415,47 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Current Stream Preview */}
+        {/* Live Course View */}
         <div className="mb-8">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="bg-white border-0 shadow-sm">
             <CardHeader>
-              <CardTitle>Live Course View - Hole 1</CardTitle>
+              <CardTitle className="text-lg font-semibold text-birdieo-navy">Live Course View - Hole 1</CardTitle>
               <CardDescription>
                 Real-time view from Lexington Golf Course
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative">
-                {streamHealth?.ok ? (
-                  <img 
-                    src={`${API}/stream/frame`} 
-                    alt="Live golf course view"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-500">
-                  <div className="text-center">
-                    <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Stream not available</p>
-                  </div>
-                </div>
-              </div>
+              <LiveVideoStream className="aspect-video" />
             </CardContent>
           </Card>
         </div>
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="bg-white border-0 shadow-sm">
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle className="text-lg font-semibold text-birdieo-navy">Quick Actions</CardTitle>
               <CardDescription>
                 Start a new round or manage your golf sessions
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button className="h-20 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white flex flex-col">
-                  <Calendar className="w-6 h-6 mb-2" />
-                  <span>Start Check-in</span>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Button className="h-24 bg-birdieo-navy hover:bg-birdieo-navy/90 text-white flex flex-col justify-center">
+                  <Camera className="w-8 h-8 mb-2" />
+                  <span className="font-medium">Start Check-in</span>
                 </Button>
-                <Button variant="outline" className="h-20 border-gray-300 hover:bg-gray-50 flex flex-col">
-                  <div className="w-6 h-6 mb-2 bg-gray-400 rounded"></div>
-                  <span>View Analytics</span>
+                <Button variant="outline" className="h-24 border-2 border-gray-200 hover:bg-gray-50 flex flex-col justify-center">
+                  <BarChart3 className="w-8 h-8 mb-2 text-birdieo-navy" />
+                  <span className="font-medium text-birdieo-navy">View Analytics</span>
                 </Button>
-                <Button variant="outline" className="h-20 border-gray-300 hover:bg-gray-50 flex flex-col">
-                  <div className="w-6 h-6 mb-2 bg-gray-400 rounded"></div>
-                  <span>Course Settings</span>
+                <Button variant="outline" className="h-24 border-2 border-gray-200 hover:bg-gray-50 flex flex-col justify-center">
+                  <Users className="w-8 h-8 mb-2 text-birdieo-navy" />
+                  <span className="font-medium text-birdieo-navy">Manage Players</span>
+                </Button>
+                <Button variant="outline" className="h-24 border-2 border-gray-200 hover:bg-gray-50 flex flex-col justify-center">
+                  <Settings className="w-8 h-8 mb-2 text-birdieo-navy" />
+                  <span className="font-medium text-birdieo-navy">Course Settings</span>
                 </Button>
               </div>
             </CardContent>
@@ -395,9 +463,9 @@ const Dashboard = () => {
         </div>
 
         {/* Rounds History */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="bg-white border-0 shadow-sm">
           <CardHeader>
-            <CardTitle>Your Golf Rounds</CardTitle>
+            <CardTitle className="text-lg font-semibold text-birdieo-navy">Your Golf Rounds</CardTitle>
             <CardDescription>
               {rounds.length === 0 
                 ? "No rounds yet. Start your first check-in to begin recording!"
@@ -408,12 +476,13 @@ const Dashboard = () => {
           <CardContent>
             {rounds.length === 0 ? (
               <div className="text-center py-12">
-                <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <Video className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-lg font-semibold text-gray-600 mb-2">No rounds yet</h3>
-                <p className="text-gray-500 mb-6">
+                <p className="text-gray-500 mb-6 max-w-md mx-auto">
                   Start your first check-in to begin recording your golf shots with AI-powered player recognition.
                 </p>
-                <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white">
+                <Button className="bg-birdieo-navy hover:bg-birdieo-navy/90 text-white">
+                  <Camera className="w-4 h-4 mr-2" />
                   Start Your First Round
                 </Button>
               </div>
@@ -422,34 +491,46 @@ const Dashboard = () => {
                 {rounds.map((round) => (
                   <div 
                     key={round.id} 
-                    className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="p-6 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                   >
                     <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">
-                          {round.course_name}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          Subject ID: {round.subject_id}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Tee Time: {new Date(round.tee_time).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className="mb-2">
-                          {round.handedness} handed
-                        </Badge>
-                        <div className="text-sm text-gray-500">
-                          {round.player_photos?.length || 0} photos
+                      <div className="flex-1">
+                        <div className="flex items-center mb-2">
+                          <h4 className="font-semibold text-birdieo-navy text-lg mr-3">
+                            {round.course_name}
+                          </h4>
+                          <Badge variant="outline" className="bg-birdieo-blue/10 text-birdieo-blue border-birdieo-blue/20">
+                            {round.handedness} handed
+                          </Badge>
                         </div>
+                        <div className="space-y-1">
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Subject ID:</span> {round.subject_id}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Tee Time:</span> {new Date(round.tee_time).toLocaleString()}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Photos:</span> {round.player_photos?.length || 0} captured
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="outline" className="border-birdieo-blue text-birdieo-blue hover:bg-birdieo-blue hover:text-white">
+                          <Eye className="w-4 h-4 mr-1" />
+                          View
+                        </Button>
+                        <Button size="sm" variant="outline" className="border-gray-300 hover:bg-gray-50">
+                          <Download className="w-4 h-4 mr-1" />
+                          Export
+                        </Button>
                       </div>
                     </div>
                     {round.clothing_breakdown && (
-                      <div className="mt-3 flex flex-wrap gap-2">
+                      <div className="mt-4 flex flex-wrap gap-2">
                         {Object.entries(round.clothing_breakdown).map(([item, description]) => (
-                          <Badge key={item} variant="secondary" className="text-xs">
-                            {item}: {description}
+                          <Badge key={item} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                            <span className="font-medium">{item}:</span> {description}
                           </Badge>
                         ))}
                       </div>
