@@ -735,13 +735,29 @@ async def start_checkin(
 @api_router.get("/courses")
 async def get_available_courses():
     """Get list of available golf courses"""
-    courses = [
-        {"id": "lexington", "name": "Lexington Golf Club", "location": "Lexington, NC"},
+    import random
+    
+    # Full list of courses
+    all_courses = [
         {"id": "pinehurst", "name": "Pinehurst Resort", "location": "Pinehurst, NC"},
         {"id": "augusta", "name": "Augusta National Golf Club", "location": "Augusta, GA"},
         {"id": "pebble", "name": "Pebble Beach Golf Links", "location": "Pebble Beach, CA"},
-        {"id": "st_andrews", "name": "St. Andrews Old Course", "location": "St. Andrews, Scotland"}
+        {"id": "st_andrews", "name": "St. Andrews Old Course", "location": "St. Andrews, Scotland"},
+        {"id": "whistling_straits", "name": "Whistling Straits", "location": "Kohler, WI"},
+        {"id": "torrey_pines", "name": "Torrey Pines Golf Course", "location": "La Jolla, CA"},
+        {"id": "bethpage", "name": "Bethpage Black", "location": "Farmingdale, NY"},
+        {"id": "kiawah", "name": "Kiawah Island Golf Resort", "location": "Kiawah Island, SC"},
+        {"id": "bandon", "name": "Bandon Dunes Golf Resort", "location": "Bandon, OR"},
+        {"id": "chambers_bay", "name": "Chambers Bay", "location": "University Place, WA"}
     ]
+    
+    # Always put Lexington Golf Club first
+    courses = [{"id": "lexington", "name": "Lexington Golf Club", "location": "Lexington, NC"}]
+    
+    # Add 5 random courses from the remaining list
+    random_courses = random.sample(all_courses, 5)
+    courses.extend(random_courses)
+    
     return {"courses": courses}
 
 @api_router.post("/checkin/upload-photo/{round_id}")
