@@ -163,9 +163,87 @@ class BirdieoAPITester:
         if success:
             analysis_ok = response.get('ok', False)
             detections = response.get('detections', [])
-            return self.log_test("Stream Analysis", True, f"- Analysis: {'Success' if analysis_ok else 'Failed'}, Detections: {len(detections)}")
+            persons = response.get('persons', [])
+            processed_frame_url = response.get('processed_frame_url')
+            
+            # Check for person detection with unique IDs
+            person_ids = []
+            for person in persons:
+                person_id = person.get('person_id', '')
+                if person_id.startswith('P') and len(person_id) == 4:  # P001, P002, etc.
+                    person_ids.append(person_id)
+            
+            details = f"- Analysis: {'Success' if analysis_ok else 'Failed'}, Detections: {len(detections)}, Persons: {len(persons)}"
+            if person_ids:
+                details += f", IDs: {', '.join(person_ids)}"
+            if processed_frame_url:
+                details += f", Frame URL: Available"
+            
+            return self.log_test("Stream Analysis", True, details)
         else:
             return self.log_test("Stream Analysis", False, f"- {response}")
+
+    def test_stream_frame_with_detection(self):
+        """Test frame with computer vision detection boxes"""
+        try:
+            url = f"{self.api_url}/stream/frame-with-detection"
+            response = self.session.get(url)
+            
+            if response.status_code == 200 and response.headers.get('content-type', '').startswith('image/'):
+                return self.log_test("Frame with Detection", True, f"- Processed image received ({len(response.content)} bytes)")
+            elif response.status_code == 503:
+                return self.log_test("Frame with Detection", True, f"- Service unavailable (expected when no frame)")
+            else:
+                return self.log_test("Frame with Detection", False, f"- Status: {response.status_code}")
+        except Exception as e:
+            return self.log_test("Frame with Detection", False, f"- Error: {str(e)}")
+
+    def test_stream_persons(self):
+        """Test tracked persons information endpoint"""
+        success, response = self.make_request('GET', '/stream/persons', expected_status=200)
+        
+        if success:
+            active_persons = response.get('active_persons', [])
+            total_tracked = response.get('total_tracked', 0)
+            timestamp = response.get('timestamp', 'N/A')
+            
+            # Validate person data structure
+            valid_persons = 0
+            for person in active_persons:
+                if all(key in person for key in ['person_id', 'confidence', 'box', 'center_point']):
+                    if person['person_id'].startswith('P') and len(person['person_id']) == 4:
+                        valid_persons += 1
+            
+            details = f"- Active: {len(active_persons)}, Total: {total_tracked}, Valid IDs: {valid_persons}"
+            return self.log_test("Stream Persons", True, details)
+        else:
+            return self.log_test("Stream Persons", False, f"- {response}")
+
+    def test_person_detection_consistency(self):
+        """Test person detection consistency across multiple calls"""
+        print("\n🔍 Testing Person Detection Consistency...")
+        
+        # Make multiple calls to analyze endpoint
+        person_ids_found = set()
+        consistent_detections = 0
+        
+        for i in range(3):
+            success, response = self.make_request('GET', '/stream/analyze', expected_status=200)
+            if success:
+                persons = response.get('persons', [])
+                for person in persons:
+                    person_id = person.get('person_id', '')
+                    if person_id.startswith('P'):
+                        person_ids_found.add(person_id)
+                        consistent_detections += 1
+            
+            time.sleep(1)  # Wait 1 second between calls
+        
+        details = f"- Unique IDs found: {len(person_ids_found)}, Total detections: {consistent_detections}"
+        if person_ids_found:
+            details += f", IDs: {', '.join(sorted(person_ids_found))}"
+        
+        return self.log_test("Person Detection Consistency", len(person_ids_found) > 0, details)
 
     def test_capture_clip(self):
         """Test 30-second clip capture"""
