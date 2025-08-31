@@ -97,6 +97,9 @@ const LoginPage = () => {
       
       login(response.data.token, response.data.user);
       toast.success(response.data.message);
+      
+      // Force redirect after successful login/registration
+      window.location.href = '/';
     } catch (error) {
       toast.error(error.response?.data?.detail || 'An error occurred');
     } finally {
