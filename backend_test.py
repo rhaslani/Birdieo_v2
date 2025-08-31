@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Optional
 
 class BirdieoAPITester:
-    def __init__(self, base_url="https://birdieo-clips.preview.emergentagent.com"):
+    def __init__(self, base_url="https://birdieo-tracker.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None
