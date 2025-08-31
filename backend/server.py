@@ -169,6 +169,11 @@ class ClothingConfirmation(BaseModel):
     bottom: str
     shoes: str
 
+class ManualClothingEntry(BaseModel):
+    item_type: str  # "hat", "top", "bottom", "shoes"
+    color: str
+    description: str
+
 class PlayerPhoto(BaseModel):
     angle: str  # "face", "front", "side", "back"
     file_path: str
