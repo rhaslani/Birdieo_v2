@@ -722,7 +722,7 @@ def mjpeg_stream():
 
 @api_router.get("/stream/analyze", response_model=AnalysisResponse)
 async def analyze_current_frame():
-    """Analyze current frame for person detection"""
+    """Analyze current frame for person detection with unique ID tracking"""
     with _lock:
         img = None if _latest_frame is None else _latest_frame.copy()
         ts = _latest_ts
@@ -732,30 +732,56 @@ async def analyze_current_frame():
     
     h, w = img.shape[:2]
     
-    # Detect persons using AI
+    # Detect persons using AI with unique ID tracking
     try:
-        detections = await detect_persons_in_frame(img)
+        persons = await detect_persons_in_frame(img)
+        
+        # Convert PersonDetection to DetectionResult for backward compatibility
+        detections = []
+        for person in persons:
+            detection = DetectionResult(
+                label=f"person_{person.person_id}",
+                confidence=person.confidence,
+                box=person.box
+            )
+            detections.append(detection)
+        
         return AnalysisResponse(
             ok=True,
             ts=ts,
             width=w,
             height=h,
-            detections=detections
+            detections=detections,
+            persons=persons,
+            processed_frame_url=f"/api/stream/frame-with-detection"
         )
     except Exception as e:
         print(f"Analysis error: {e}")
         # Return demo detection
-        demo_detection = DetectionResult(
-            label="person",
+        demo_box = {"x": int(w*0.25), "y": int(h*0.25), "w": int(w*0.5), "h": int(h*0.5)}
+        person_id = assign_person_id(demo_box, 0.5)
+        
+        demo_person = PersonDetection(
+            person_id=person_id,
             confidence=0.5,
-            box={"x": int(w*0.25), "y": int(h*0.25), "w": int(w*0.5), "h": int(h*0.5)}
+            box=demo_box,
+            center_point=calculate_box_center(demo_box)
         )
+        
+        demo_detection = DetectionResult(
+            label=f"person_{person_id}",
+            confidence=0.5,
+            box=demo_box
+        )
+        
         return AnalysisResponse(
             ok=True,
             ts=ts,
             width=w,
             height=h,
-            detections=[demo_detection]
+            detections=[demo_detection],
+            persons=[demo_person],
+            processed_frame_url=f"/api/stream/frame-with-detection"
         )
 
 @api_router.post("/stream/capture-clip")
