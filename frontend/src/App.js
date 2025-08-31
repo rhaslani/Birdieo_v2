@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar";
 import { Progress } from "./components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./components/ui/dialog";
-import { Video, Play, Pause, Camera, Users, BarChart3, Settings, Upload, Download, Eye, CheckCircle, Clock, MapPin, User, Check, X, RotateCcw, Plus, Share2, ExternalLink, Trophy, ArrowLeft } from "lucide-react";
+import { Video, Play, Pause, Camera, Users, BarChart3, Settings, Upload, Download, Eye, CheckCircle, Clock, MapPin, User, Check, X, RotateCcw, Plus, Share2, ExternalLink, Trophy, ArrowLeft, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "./components/ui/sonner";
 
