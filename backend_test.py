@@ -461,6 +461,12 @@ class BirdieoAPITester:
         print(f"📡 Testing against: {self.base_url}")
         print("=" * 60)
         
+        # Golf Course Tests (Priority - Review Request Focus)
+        print("\n🏌️ Golf Course Dropdown Tests (Review Request Focus)")
+        print("-" * 50)
+        self.test_golf_courses_endpoint()
+        self.test_golf_courses_multiple_calls()
+        
         # Authentication Tests
         print("\n🔐 Authentication Tests")
         print("-" * 30)
