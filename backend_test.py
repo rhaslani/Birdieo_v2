@@ -372,7 +372,9 @@ class BirdieoAPITester:
         self.test_stream_health()
         self.test_stream_frame()
         self.test_stream_analyze()
-        self.test_capture_clip()
+        self.test_stream_frame_with_detection()
+        self.test_stream_persons()
+        self.test_person_detection_consistency()
         
         # Check-in Flow Tests
         print("\n⛳ Check-in Flow Tests")
