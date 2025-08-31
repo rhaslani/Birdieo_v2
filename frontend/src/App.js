@@ -466,17 +466,38 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Live Course View */}
+        {/* Live Course View with Computer Vision */}
         <div className="mb-8">
           <Card className="bg-white border-0 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-birdieo-navy">Live Course View - Hole 1</CardTitle>
-              <CardDescription>
-                Real-time view from Lexington Golf Course
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-birdieo-navy">
+                    Live Course View - Hole 1 with AI Person Detection
+                  </CardTitle>
+                  <CardDescription>
+                    Real-time view from Lexington Golf Course with computer vision person tracking
+                  </CardDescription>
+                </div>
+                <Badge className="bg-birdieo-blue/10 text-birdieo-blue border-birdieo-blue/20">
+                  AI Vision Enabled
+                </Badge>
+              </div>
             </CardHeader>
             <CardContent>
-              <LiveVideoStream className="aspect-video" />
+              <LiveVideoStream className="aspect-video" showDetection={true} />
+              <div className="mt-4 text-sm text-gray-600">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-green-500 rounded mr-2"></div>
+                    <span>Green boxes: Detected persons with unique IDs</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                    <span>Red dots: Person center points</span>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
