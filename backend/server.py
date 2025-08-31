@@ -593,9 +593,9 @@ async def start_checkin(
     # Create new round
     round_obj = Round(
         user_id=user_id,
+        course_name=checkin_data.course_name,
         tee_time=checkin_data.tee_time,
         handedness=checkin_data.handedness,
-        course_name=checkin_data.course_name,
         expected_timeline=generate_expected_timeline(checkin_data.tee_time)
     )
     
@@ -605,6 +605,18 @@ async def start_checkin(
         "message": "Check-in started",
         "round": round_obj
     }
+
+@api_router.get("/courses")
+async def get_available_courses():
+    """Get list of available golf courses"""
+    courses = [
+        {"id": "lexington", "name": "Lexington Golf Course", "location": "Lexington, NC"},
+        {"id": "pinehurst", "name": "Pinehurst Resort", "location": "Pinehurst, NC"},
+        {"id": "augusta", "name": "Augusta National", "location": "Augusta, GA"},
+        {"id": "pebble", "name": "Pebble Beach", "location": "Pebble Beach, CA"},
+        {"id": "st_andrews", "name": "St. Andrews Links", "location": "St. Andrews, Scotland"}
+    ]
+    return {"courses": courses}
 
 @api_router.post("/checkin/upload-photo/{round_id}")
 async def upload_player_photo(
@@ -619,7 +631,7 @@ async def upload_player_photo(
         raise HTTPException(status_code=404, detail="Round not found")
     
     # Save file
-    file_extension = file.filename.split('.')[-1]
+    file_extension = file.filename.split('.')[-1] if file.filename else 'jpg'
     filename = f"{round_id}_{angle}_{int(time.time())}.{file_extension}"
     file_path = ROOT_DIR / "uploads" / "player_photos" / filename
     
@@ -627,8 +639,10 @@ async def upload_player_photo(
         content = await file.read()
         await f.write(content)
     
-    # Analyze clothing with AI
-    clothing_analysis = await analyze_clothing_with_ai(str(file_path), angle)
+    # Analyze clothing with AI (for non-face photos)
+    clothing_analysis = None
+    if angle != "face":
+        clothing_analysis = await analyze_clothing_with_ai(str(file_path), angle)
     
     # Create photo record
     photo = PlayerPhoto(
@@ -646,6 +660,36 @@ async def upload_player_photo(
     return {
         "message": "Photo uploaded successfully",
         "photo": photo
+    }
+
+@api_router.post("/checkin/confirm-clothing/{round_id}")
+async def confirm_clothing(
+    round_id: str,
+    clothing_confirmation: ClothingConfirmation,
+    user_id: str = Depends(get_current_user)
+):
+    """Confirm or correct AI clothing analysis"""
+    # Verify round belongs to user
+    round_doc = await db.rounds.find_one({"id": round_id, "user_id": user_id})
+    if not round_doc:
+        raise HTTPException(status_code=404, detail="Round not found")
+    
+    # Update confirmed clothing
+    confirmed_clothing = {
+        "hat": clothing_confirmation.hat,
+        "top": clothing_confirmation.top,
+        "bottom": clothing_confirmation.bottom,
+        "shoes": clothing_confirmation.shoes
+    }
+    
+    await db.rounds.update_one(
+        {"id": round_id},
+        {"$set": {"confirmed_clothing": confirmed_clothing}}
+    )
+    
+    return {
+        "message": "Clothing confirmed successfully",
+        "confirmed_clothing": confirmed_clothing
     }
 
 @api_router.post("/checkin/complete/{round_id}")
