@@ -943,7 +943,7 @@ def get_current_frame():
 
 @api_router.get("/stream/frame-with-detection")
 async def get_frame_with_detection():
-    """Get current frame with person detection boxes and IDs"""
+    """Get current frame with enhanced person detection boxes and IDs"""
     with _lock:
         img = None if _latest_frame is None else _latest_frame.copy()
     
@@ -951,8 +951,8 @@ async def get_frame_with_detection():
         return Response(status_code=503)
     
     try:
-        # Detect persons in the frame
-        persons = await detect_persons_in_frame(img)
+        # Use enhanced person detection for better accuracy
+        persons = await detect_persons_in_frame_enhanced(img)
         
         # Draw bounding boxes on the frame
         processed_frame = draw_bounding_boxes(img, persons)
@@ -965,7 +965,7 @@ async def get_frame_with_detection():
         return Response(content=buf.tobytes(), media_type="image/jpeg")
         
     except Exception as e:
-        print(f"Error processing frame with detection: {e}")
+        print(f"Error processing frame with enhanced detection: {e}")
         # Return original frame if processing fails
         ok, buf = cv2.imencode(".jpg", img, [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY])
         if not ok:
