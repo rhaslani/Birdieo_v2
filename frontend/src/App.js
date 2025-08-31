@@ -89,24 +89,19 @@ const BirdieoLogo = ({ className = "w-10 h-10" }) => {
   );
 };
 
-// Silhouette Guide Component
+// Silhouette Guide Component with Specific Images
 const SilhouetteGuide = ({ photoType, className = "" }) => {
-  const silhouetteUrl = "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/tqa9gz29_image.png";
-  
-  const getSilhouetteStyle = () => {
-    switch (photoType) {
-      case 'side':
-        return { transform: 'scaleX(-1)' }; // Flip for left side view
-      case 'back':
-        return { transform: 'scaleX(-1) rotate(180deg)' }; // Back view
-      case 'front':
-      default:
-        return {}; // Front view - no transformation
-    }
+  const silhouetteUrls = {
+    face: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/2ysq2zoq_Face.png",
+    front: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/ukfp7pth_front.png", 
+    side: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/l71ihavi_Side.jpeg",
+    back: "https://customer-assets.emergentagent.com/job_birdieo-clips/artifacts/lxridhgc_Back.png"
   };
-
-  if (photoType === 'face') {
-    // Face silhouette - just a simple circle
+  
+  const silhouetteUrl = silhouetteUrls[photoType];
+  
+  if (!silhouetteUrl) {
+    // Fallback for any missing photo type
     return (
       <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${className}`}>
         <div className="w-48 h-48 border-4 border-white/60 rounded-full bg-white/10"></div>
@@ -119,15 +114,15 @@ const SilhouetteGuide = ({ photoType, className = "" }) => {
       <img 
         src={silhouetteUrl}
         alt={`${photoType} silhouette guide`}
-        className="max-w-xs max-h-full opacity-30"
-        style={getSilhouetteStyle()}
+        className="max-w-xs max-h-full opacity-40"
         onError={(e) => {
           // Fallback to basic outline if image fails
           e.target.style.display = 'none';
+          e.target.parentElement.querySelector('.fallback-outline').style.display = 'block';
         }}
       />
       {/* Fallback outline */}
-      <div className="w-24 h-64 border-4 border-white/60 rounded-full bg-white/10" style={{display: 'none'}}></div>
+      <div className="fallback-outline w-24 h-64 border-4 border-white/60 rounded-full bg-white/10" style={{display: 'none'}}></div>
     </div>
   );
 };
